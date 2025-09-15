@@ -6,14 +6,14 @@ Here's the simplified `checklist.md` file:
 ## ✅ Must-Have SEO Checklist
 
 ### Domain Control
-*See: [Domain Indexing Strategy](./guide/domain-indexing.md)*
+*See: [Domain Indexing Strategy](./guide/next/domain-indexing.md)*
 
 - [ ] Main domain (yourdomain.com) - Allow indexing
 - [ ] Subdomains (staging/dev) - Block indexing  
 - [ ] Preview links (vercel.app/netlify.app) - Block indexing
 
 ### Essential Meta Tags
-*See: [Meta Tags Guide](./guide/meta-tags.md)*
+*See: [Meta Tags Guide](./guide/next/meta-tags.md)*
 
 - [ ] Unique title tag (50-60 characters)
 - [ ] Meta description (150-160 characters)
@@ -23,7 +23,7 @@ Here's the simplified `checklist.md` file:
 - [ ] Favicon configured
 
 ### Content Basics
-*See: [Meta Tags Guide](./guide/meta-tags.md)*
+*See: [Meta Tags Guide](./guide/next/meta-tags.md)*
 
 - [ ] One H1 tag per page
 - [ ] Alt text for all images
@@ -32,7 +32,7 @@ Here's the simplified `checklist.md` file:
 - [ ] Proper heading hierarchy (H1-H6)
 
 ### Technical Setup
-*See: [Next.js Config](./guide/nextjs-config.md) | [Robots.txt](./guide/robots-txt.md)*
+*See: [Next.js Config](./guide/next/nextjs-config.md) | [Robots.txt](./guide/next/robots-txt.md)*
 
 - [ ] robots.txt configured
 - [ ] XML sitemap created
@@ -41,7 +41,7 @@ Here's the simplified `checklist.md` file:
 - [ ] Headers configured
 
 ### Performance
-*See: [Performance Guide](./guide/performance.md)*
+*See: [Performance Guide](./guide/next/performance.md)*
 
 - [ ] Page loads under 3 seconds
 - [ ] Core Web Vitals passing
@@ -50,7 +50,7 @@ Here's the simplified `checklist.md` file:
 - [ ] CSS/JS minified
 
 ### Analytics
-*See: [Analytics Guide](./guide/analytics.md)*
+*See: [Analytics Guide](./guide/next/analytics.md)*
 
 - [ ] Google Analytics installed (production only)
 - [ ] Google Search Console verified
@@ -58,7 +58,7 @@ Here's the simplified `checklist.md` file:
 - [ ] Conversion tracking setup
 
 ### Structured Data
-*See: [Structured Data Guide](./guide/structured-data.md)*
+*See: [Structured Data Guide](./guide/next/structured-data.md)*
 
 - [ ] Organization schema
 - [ ] Website schema
@@ -70,7 +70,7 @@ Here's the simplified `checklist.md` file:
 ## 🚨 Emergency Fixes
 
 ### Wrong Domain Gets Indexed
-*See: [Domain Indexing Emergency](./guide/domain-indexing.md#emergency-response)*
+*See: [Domain Indexing Emergency](./guide/next/domain-indexing.md#emergency-response)*
 
 **Do immediately (within 1 hour):**
 
