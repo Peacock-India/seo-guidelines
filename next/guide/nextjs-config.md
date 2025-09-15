@@ -1,6 +1,6 @@
 # Next.js SEO Configuration
 
-Complete guide for configuring SEO metadata, robots.txt, and sitemaps in Next.js applications using the app directory to optimize search engine visibility and control indexing across different environments. **Recommended Open Graph image size: 1200 x 630 pixels (aspect ratio 1.91:1), under 1MB file size, using JPEG or PNG format.**
+Complete guide for configuring SEO metadata, robots.txt, and sitemaps in Next.js applications using the app directory to optimize search engine visibility and control indexing across different environments. **Recommended Open Graph image size: 1200 x 630 pixels (aspect ratio 1.91:1), under 1MB to 3MB(MAX) file size, using JPEG or PNG format.**
 
 ## SEO Configuration by Environment
 
