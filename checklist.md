@@ -3,14 +3,14 @@
 ## ✅ Must-Have SEO Checklist
 
 ### Domain Control
-*See: [Domain Indexing Strategy](./guide/next/domain-indexing.md)*
+*See: [Domain Indexing Strategy](./next/guide/domain-indexing.md)*
 
 - [ ] Main domain (yourdomain.com) - Allow indexing
 - [ ] Subdomains (staging/dev) - Block indexing  
 - [ ] Preview links (vercel.app/netlify.app) - Block indexing
 
 ### Essential Meta Tags
-*See: [Meta Tags Guide](./guide/next/meta-tags.md)*
+*See: [Meta Tags Guide](./next/guide/meta-tags.md)*
 
 - [ ] Unique title tag (50-60 characters)
 - [ ] Meta description (150-160 characters)
@@ -20,7 +20,7 @@
 - [ ] Favicon configured
 
 ### Content Basics
-*See: [Meta Tags Guide](./guide/next/meta-tags.md)*
+*See: [Meta Tags Guide](./next/guide/meta-tags.md)*
 
 - [ ] One H1 tag per page
 - [ ] Alt text for all images
@@ -29,7 +29,7 @@
 - [ ] Proper heading hierarchy (H1-H6)
 
 ### Technical Setup
-*See: [Next.js Config](./guide/next/nextjs-config.md) | [Robots.txt](./guide/next/robots-txt.md)*
+*See: [Next.js Config](./next/guide/nextjs-config.md) | [Robots.txt](./next/guide/robots-txt.md)*
 
 - [ ] robots.txt configured
 - [ ] XML sitemap created
@@ -38,7 +38,7 @@
 - [ ] Headers configured
 
 ### Performance
-*See: [Performance Guide](./guide/next/performance.md)*
+*See: [Performance Guide](./next/guide/performance.md)*
 
 - [ ] Page loads under 3 seconds
 - [ ] Core Web Vitals passing
@@ -47,7 +47,7 @@
 - [ ] CSS/JS minified
 
 ### Analytics
-*See: [Analytics Guide](./guide/next/analytics.md)*
+*See: [Analytics Guide](./next/guide/analytics.md)*
 
 - [ ] Google Analytics installed (production only)
 - [ ] Google Search Console verified
@@ -55,7 +55,7 @@
 - [ ] Conversion tracking setup
 
 ### Structured Data
-*See: [Structured Data Guide](./guide/next/structured-data.md)*
+*See: [Structured Data Guide](./next/guide/structured-data.md)*
 
 - [ ] Organization schema
 - [ ] Website schema
