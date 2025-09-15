@@ -2,7 +2,7 @@
 
 Please provide me with a guide in this structure. Some modifications are allowed, such as including right or wrong examples or using tables if needed.
 
-Include only Next.js code examples that are relevant to the topic. To ensure accuracy and the most current practices, reference the official Next.js documentation.
+Include only Next.js code examples (only app dir) that are relevant to the topic. To ensure accuracy and the most current practices, reference the official Next.js documentation.
 
 NOTE: If 'All' is required, then mention 'Nil' in the advance section.
 
