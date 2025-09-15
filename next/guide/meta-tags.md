@@ -1,220 +1,417 @@
-Here's the simplified `meta-tags.md`:
+# Meta Tags & HTML Optimization for Next.js
 
-```markdown
-# Meta Tags & HTML Optimization
+Complete guide for implementing meta tags, Open Graph metadata, and HTML optimization in Next.js applications using the app directory to improve SEO, social sharing, and user experience.
 
-## Essential Meta Tags
+## Meta Tag Optimization Guidelines
 
-### Basic HTML Setup
+| Meta Tag Type | Character Limits | SEO Impact | Social Sharing |
+|---------------|------------------|------------|----------------|
+| **Title** | 50-60 characters | High - Primary ranking factor | Used by all platforms |
+| **Description** | 150-160 characters | Medium - Affects click-through rate | Used by most platforms |
+| **OG Image** | 1200 x 630px (under 1-2MB) | Low - Not a ranking factor | Critical for engagement |
+| **Alt Text** | 125 characters max | High - Accessibility & image SEO | Screen readers |
+| **Canonical URL** | 125 characters max | High - Avoid duplicate content | Search engines |
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="format-detection" content="telephone=no" />
+## Basic
+
+Essential setup and core functionality that everyone needs.
+
+### Essential Metadata Configuration
+
+```typescript
+// app/layout.tsx
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  // Required meta tags
+  metadataBase: new URL('https://www.yourdomain.com'),
   
-  <!-- Google Verification (if needed) -->
-  <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE" />
-</head>
+  // Title optimization
+  title: {
+    default: "Primary Keyword | Secondary Keyword | Brand Name",
+    template: "%s | Brand Name"
+  },
+  
+  // Meta description (150-160 characters)
+  description: "Clear value proposition with primary keyword. Include call-to-action. Keep under 160 characters for full display.",
+  
+  // Essential SEO tags
+  keywords: ["primary keyword", "secondary keyword", "brand name"],
+  authors: [{ name: "Your Name" }],
+  creator: "Your Name",
+  publisher: "Brand Name",
+  
+  // Robots directive
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  
+  // Canonical URL
+  alternates: {
+    canonical: 'https://www.yourdomain.com',
+  },
+  
+  // Verification codes
+  verification: {
+    google: 'your-google-verification-code',
+  },
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  )
+}
 ```
 
-### Robots Meta Tags
+### Open Graph & Twitter Configuration
 
-#### Production Domain
-```html
-<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+```typescript
+// app/layout.tsx
+export const metadata: Metadata = {
+  // ... other metadata
+  
+  // Open Graph tags
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://www.yourdomain.com',
+    siteName: 'Your Brand Name',
+    title: 'Social Media Title - Keep Under 60 Characters',
+    description: 'Social media description - keep under 120 characters',
+    images: [
+      {
+        url: '/og-image.jpg', // 1200x630px
+        width: 1200,
+        height: 630,
+        alt: 'Descriptive alt text for your brand',
+      },
+    ],
+  },
+  
+  // Twitter Card tags
+  twitter: {
+    card: 'summary_large_image',
+    site: '@yourhandle',
+    creator: '@yourhandle',
+    title: 'Twitter Title - Keep Under 70 Characters',
+    description: 'Twitter description - keep under 200 characters',
+    images: ['/twitter-image.jpg'], // 1200x600px
+  },
+}
 ```
 
-#### Blocked Domains
-```html
-<meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
-<meta name="googlebot" content="noindex, nofollow">
+### Favicon & Icons Setup
+
+```typescript
+// Place these files in your app directory:
+// app/favicon.ico (32x32px) - Required
+// app/icon.png (any size) - Optional
+// app/apple-icon.png (180x180px) - Optional
+
+// Next.js automatically detects and adds appropriate tags:
+// <link rel="icon" href="/favicon.ico" sizes="any" />
+// <link rel="icon" href="/icon.png" type="image/png" />
+// <link rel="apple-touch-icon" href="/apple-icon.png" />
 ```
 
-## Title & Description
+### Image Optimization
 
-### Title Tag (50-60 characters)
-
-```html
-<title>Primary Keyword | Secondary Keyword | Brand Name</title>
-```
-
-✅ **Good Examples:**
-- `Web Design Services | Professional UI/UX | YourBrand`
-- `SEO Checklist 2024 | Complete Guide | YourBrand`
-
-❌ **Bad Examples:**
-- `Welcome to Our Website`
-- `Home Page`
-
-### Meta Description (150-160 characters)
-
-```html
-<meta name="description" content="Clear value proposition with primary keyword. Include call-to-action. Keep under 160 characters for full display.">
-```
-
-✅ **Good Example:**
-```html
-<meta name="description" content="Professional web design services that convert visitors into customers. Get a free quote today and boost your online presence.">
-```
-
-## Header Structure
-
-### Proper Hierarchy
-
-```html
-<h1>One H1 per page - Primary keyword focus</h1>
-
-<h2>Major Section Heading</h2>
-  <h3>Subsection under H2</h3>
-  <h3>Another subsection</h3>
-
-<h2>Another Major Section</h2>
-  <h3>Subsection</h3>
-```
-
-**Rules:**
-- Only ONE H1 per page
-- Don't skip levels (H1 → H3)
-- Include keywords naturally
-
-## Images
-
-### Optimized Image
-
-```html
-<img 
-  src="/image.webp" 
-  alt="Descriptive text with keyword when relevant"
-  width="800"
-  height="600"
-  loading="lazy"
-/>
-```
-
-### Next.js Image
-
-```jsx
+```tsx
+// components/OptimizedImage.tsx
 import Image from 'next/image'
 
-<Image
-  src="/hero.jpg"
-  alt="Descriptive alt text"
-  width={800}
-  height={600}
-  priority // For above-fold images
-  loading="lazy" // For below-fold images
-/>
+export function OptimizedImage() {
+  return (
+    <>
+      {/* Above-the-fold image with priority */}
+      <Image
+        src="/hero.webp"
+        alt="Descriptive text with keyword when relevant"
+        width={1200}
+        height={600}
+        priority
+        placeholder="blur"
+        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD..."
+      />
+      
+      {/* Below-the-fold images with lazy loading */}
+      <Image
+        src="/feature.webp"
+        alt="Feature description with relevant keywords"
+        width={800}
+        height={400}
+        loading="lazy"
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+      />
+    </>
+  )
+}
 ```
 
-**Rules:**
-- Alt text on ALL images
-- Keep images under 100KB - 600KB(MAX)
-- Use WebP/AVIF formats. WebP is recommended. 
-- Specify width/height
+### Proper Heading Structure
 
-## Canonical & Language
-
-### Canonical URL
-
-```html
-<link rel="canonical" href="https://www.yourdomain.com/current-page/" />
+```tsx
+// app/page.tsx
+export default function HomePage() {
+  return (
+    <main>
+      {/* Only ONE H1 per page */}
+      <h1>Primary Keyword - Main Page Topic</h1>
+      
+      {/* Proper hierarchy - don't skip levels */}
+      <section>
+        <h2>Major Section Heading</h2>
+        <h3>Subsection under H2</h3>
+        <h3>Another subsection</h3>
+      </section>
+      
+      <section>
+        <h2>Another Major Section</h2>
+        <h3>Subsection with secondary keywords</h3>
+      </section>
+    </main>
+  )
+}
 ```
 
-### Language
+### Basic Checklist
 
-```html
-<html lang="en">
-<!-- or -->
-<html lang="en-US">
-```
+- [ ] Configure essential metadata in root `layout.tsx`
+- [ ] Set up title template for consistent branding
+- [ ] Add meta description under 160 characters
+- [ ] Configure Open Graph and Twitter Card metadata
+- [ ] Place `favicon.ico` in app directory
+- [ ] Use Next.js `<Image>` component for all images
+- [ ] Implement proper heading hierarchy (one H1 per page)
+- [ ] Add descriptive alt text to all images
 
-### International (if needed)
+## Advanced
 
-```html
-<link rel="alternate" hreflang="en" href="https://example.com/" />
-<link rel="alternate" hreflang="es" href="https://example.com/es/" />
-<link rel="alternate" hreflang="x-default" href="https://example.com/" />
-```
+Optional features and advanced configurations.
 
-## Favicon & Icons
+### Dynamic Metadata Generation
 
-```html
-<link rel="icon" href="/favicon.ico" sizes="32x32" />
-<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-<link rel="manifest" href="/site.webmanifest" />
-<meta name="theme-color" content="#000000" />
-```
+```typescript
+// app/blog/[slug]/page.tsx
+import { Metadata } from 'next'
 
-**Required Files:**
-- `favicon.ico` (32x32px)
-- `favicon.svg` (scalable)
-- `apple-touch-icon.png` (180x180px)
-- `site.webmanifest`
+interface BlogPost {
+  title: string
+  excerpt: string
+  author: string
+  publishedAt: string
+  featuredImage: string
+  slug: string
+}
 
-## Open Graph & Social
+async function getBlogPost(slug: string): Promise<BlogPost> {
+  const res = await fetch(`${process.env.API_URL}/posts/${slug}`)
+  if (!res.ok) throw new Error('Failed to fetch post')
+  return res.json()
+}
 
-### Open Graph (Facebook)
-
-```html
-<meta property="og:type" content="website" />
-<meta property="og:title" content="Page Title - Keep Under 60 Characters" />
-<meta property="og:description" content="Description - Keep under 160 characters" />
-<meta property="og:image" content="https://yourdomain.com/og-image.jpg" />
-<meta property="og:url" content="https://yourdomain.com" />
-<meta property="og:site_name" content="Your Site Name" />
-```
-
-### Twitter Card
-
-```html
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Title - Keep Under 70 Characters" />
-<meta name="twitter:description" content="Description - Keep under 200 characters" />
-<meta name="twitter:image" content="https://yourdomain.com/twitter-image.jpg" />
-<meta name="twitter:site" content="@yourhandle" />
-```
-
-**Image Requirements:**
-- OG Image: 1200x630px
-- Twitter Image: 1200x600px
-
----
-
-## Complete Example
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+export async function generateMetadata(
+  { params }: { params: { slug: string } }
+): Promise<Metadata> {
+  const post = await getBlogPost(params.slug)
   
-  <!-- SEO Meta Tags -->
-  <title>Web Design Services | Professional UI/UX | YourBrand</title>
-  <meta name="description" content="Professional web design services that convert visitors into customers. Get a free quote today and boost your online presence.">
-  <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://www.yourdomain.com/" />
+  return {
+    title: post.title,
+    description: post.excerpt,
+    authors: [{ name: post.author }],
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      images: [
+        {
+          url: post.featuredImage,
+          width: 1200,
+          height: 630,
+          alt: post.title,
+        },
+      ],
+      publishedTime: post.publishedAt,
+      type: 'article',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: post.excerpt,
+      images: [post.featuredImage],
+    },
+  }
+}
+
+export default async function BlogPost({ 
+  params 
+}: { 
+  params: { slug: string } 
+}) {
+  const post = await getBlogPost(params.slug)
   
-  <!-- Favicon -->
-  <link rel="icon" href="/favicon.ico" sizes="32x32" />
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-  
-  <!-- Open Graph -->
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="Professional Web Design Services | YourBrand" />
-  <meta property="og:description" content="Transform your online presence with our expert web design services. Get a free quote today." />
-  <meta property="og:image" content="https://yourdomain.com/og-image.jpg" />
-  <meta property="og:url" content="https://yourdomain.com" />
-  
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Professional Web Design Services" />
-  <meta name="twitter:description" content="Transform your online presence with our expert web design services." />
-  <meta name="twitter:image" content="https://yourdomain.com/twitter-image.jpg" />
-</head>
+  return (
+    <article>
+      <h1>{post.title}</h1>
+      <p>{post.excerpt}</p>
+      {/* Article content */}
+    </article>
+  )
+}
 ```
+
+### Environment-Specific Metadata
+
+```typescript
+// utils/metadata.ts
+export function getEnvironmentMetadata() {
+  const isProduction = process.env.NODE_ENV === 'production'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  
+  if (!isProduction) {
+    return {
+      title: 'Development Site - Not for Public',
+      description: 'This is a development environment',
+      robots: {
+        index: false,
+        follow: false,
+      },
+    }
+  }
+  
+  return {
+    robots: {
+      index: true,
+      follow: true,
+    },
+    metadataBase: new URL(baseUrl),
+  }
+}
 ```
+
+```typescript
+// app/layout.tsx
+import { getEnvironmentMetadata } from '@/utils/metadata'
+
+const envMetadata = getEnvironmentMetadata()
+
+export const metadata: Metadata = {
+  ...envMetadata,
+  // ... rest of your metadata
+}
+```
+
+### Multi-Language Support
+
+```typescript
+// app/layout.tsx
+export const metadata: Metadata = {
+  // ... other metadata
+  alternates: {
+    canonical: 'https://www.yourdomain.com',
+    languages: {
+      'en-US': 'https://www.yourdomain.com/en',
+      'es-ES': 'https://www.yourdomain.com/es',
+      'fr-FR': 'https://www.yourdomain.com/fr',
+    },
+  },
+}
+```
+
+### Custom Viewport Configuration
+
+```typescript
+// app/layout.tsx
+import { Viewport } from 'next'
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false, // Only if necessary for UX
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#000000' },
+  ],
+}
+```
+
+### Dynamic Open Graph Images
+
+```tsx
+// app/blog/[slug]/opengraph-image.tsx
+import { ImageResponse } from 'next/og'
+
+export const size = {
+  width: 1200,
+  height: 630,
+}
+
+export const contentType = 'image/png'
+
+export default async function OGImage({
+  params,
+}: {
+  params: { slug: string }
+}) {
+  const post = await getBlogPost(params.slug)
+  
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          fontSize: 64,
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'white',
+          textAlign: 'center',
+          padding: '40px',
+        }}
+      >
+        {post.title}
+      </div>
+    ),
+    {
+      ...size,
+    }
+  )
+}
+```
+
+### Advanced Checklist
+
+- [ ] Implement dynamic metadata generation for blog/product pages
+- [ ] Set up environment-specific metadata configurations
+- [ ] Configure multi-language alternate links if applicable
+- [ ] Create dynamic Open Graph images with `next/og`
+- [ ] Set up custom viewport configurations for PWA support
+- [ ] Test metadata with social media validators
+- [ ] Monitor Open Graph image generation performance
+- [ ] Validate structured data with Google's Rich Results Test
+
+## References
+
+- [Next.js Metadata API Documentation](https://nextjs.org/docs/app/api-reference/functions/generate-metadata)
+- [Next.js Metadata and OG Images Guide](https://nextjs.org/docs/app/getting-started/metadata-and-og-images)
+- [Next.js Favicon and Icons Setup](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/app-icons)
+- [Next.js Open Graph Image Generation](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/opengraph-image)
+- [Next.js Image Optimization](https://nextjs.org/docs/app/getting-started/images)
+- [Open Graph Protocol Specification](https://ogp.me/)
