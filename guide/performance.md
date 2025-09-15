@@ -1,181 +1,130 @@
 # Performance Optimization
 
-Page speed and Core Web Vitals are crucial ranking factors. This guide covers essential performance optimizations.
+## Core Web Vitals Targets
 
-## Core Web Vitals
+| Metric | Good | Poor | What it Measures |
+|--------|------|------|------------------|
+| **LCP** (Largest Contentful Paint) | ≤ 2.5s | > 4.0s | Loading performance |
+| **FID** (First Input Delay) | ≤ 100ms | > 300ms | Interactivity |
+| **CLS** (Cumulative Layout Shift) | ≤ 0.1 | > 0.25 | Visual stability |
 
-### Key Metrics
+## Essential Performance Checklist
 
-1. **Largest Contentful Paint (LCP)** - Loading performance
-   - **Good**: ≤ 2.5 seconds
-   - **Needs Improvement**: 2.5-4.0 seconds
-   - **Poor**: > 4.0 seconds
-
-2. **First Input Delay (FID)** - Interactivity
-   - **Good**: ≤ 100 milliseconds
-   - **Needs Improvement**: 100-300 milliseconds
-   - **Poor**: > 300 milliseconds
-
-3. **Cumulative Layout Shift (CLS)** - Visual stability
-   - **Good**: ≤ 0.1
-   - **Needs Improvement**: 0.1-0.25
-   - **Poor**: > 0.25
-
-## Performance Requirements
-
-### Essential Benchmarks
-
-- [ ] **Page Load Speed** < 3 seconds (tested with PageSpeed Insights)
-- [ ] **Core Web Vitals** pass (LCP, FID, CLS)
-- [ ] **Images optimized** (WebP/AVIF format, proper sizing)
-- [ ] **Lazy loading** implemented for images below the fold
-- [ ] **CSS/JS minified** and compressed
-- [ ] **HTTPS enabled** with valid SSL certificate
+- [ ] Page loads in under 3 seconds
+- [ ] PageSpeed Insights score 90+
+- [ ] All Core Web Vitals green
+- [ ] Images optimized and lazy loaded
+- [ ] CSS/JS minified
+- [ ] HTTPS enabled
 
 ## Image Optimization
 
-### Modern Image Formats
-
-```html
-<!-- Use modern formats with fallbacks -->
-<picture>
-  <source srcset="/hero-image.avif" type="image/avif">
-  <source srcset="/hero-image.webp" type="image/webp">
-  <img src="/hero-image.jpg" alt="Hero image description" width="800" height="600">
-</picture>
-```
-
 ### Next.js Image Component
 
-```typescript
+```jsx
 import Image from 'next/image'
 
-// Optimized image with Next.js
+// Above-the-fold image
 <Image
-  src="/hero-image.jpg"
-  alt="Descriptive alt text"
-  width={800}
+  src="/hero.jpg"
+  alt="Hero image"
+  width={1200}
   height={600}
-  priority // For above-the-fold images
+  priority
   placeholder="blur"
-  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..."
+  blurDataURL="data:image/jpeg;base64,..."
 />
 
-// For below-the-fold images
+// Below-the-fold image
 <Image
-  src="/feature-image.jpg"
+  src="/feature.jpg"
   alt="Feature description"
-  width={400}
-  height={300}
+  width={800}
+  height={400}
   loading="lazy"
 />
 ```
 
-### Image Optimization Checklist
+### Modern Format with Fallback
 
-- [ ] **Compress images** (aim for <100KB per image)
-- [ ] **Use appropriate dimensions** (don't scale down large images)
-- [ ] **Implement lazy loading** for below-the-fold images
-- [ ] **Specify width/height** to prevent layout shift
-- [ ] **Use modern formats** (WebP, AVIF)
-- [ ] **Optimize for different screen sizes** (responsive images)
+```html
+<picture>
+  <source srcset="/image.avif" type="image/avif">
+  <source srcset="/image.webp" type="image/webp">
+  <img src="/image.jpg" alt="Description" width="800" height="600">
+</picture>
+```
+
+### Image Rules
+- Keep under 100KB per image
+- Use WebP/AVIF formats
+- Specify width/height (prevents layout shift)
+- Lazy load below-fold images
+- Use descriptive file names
 
 ## CSS Optimization
 
-### Critical CSS
+### Critical CSS (Inline)
 
 ```html
-<!-- Inline critical CSS -->
-<style>
-  /* Critical above-the-fold styles */
-  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
-  .hero { min-height: 100vh; display: flex; align-items: center; }
-  .hero h1 { font-size: 3rem; font-weight: 700; }
-</style>
-
-<!-- Load non-critical CSS asynchronously -->
-<link rel="preload" href="/styles/main.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="/styles/main.css"></noscript>
+<head>
+  <style>
+    /* Critical above-the-fold styles */
+    body { font-family: system-ui, sans-serif; }
+    .hero { min-height: 100vh; display: flex; }
+  </style>
+  
+  <!-- Load non-critical CSS async -->
+  <link rel="preload" href="/styles.css" as="style" 
+        onload="this.onload=null;this.rel='stylesheet'">
+</head>
 ```
 
 ### CSS Best Practices
-
-- [ ] **Minimize CSS** - Remove unused styles
-- [ ] **Use CSS-in-JS** for component-specific styles
-- [ ] **Avoid @import** - Use bundler imports instead
-- [ ] **Optimize fonts** - Use font-display: swap
-- [ ] **Reduce specificity** - Avoid deeply nested selectors
+- Remove unused CSS
+- Avoid @import statements
+- Minimize CSS files
+- Use CSS-in-JS for components
 
 ## JavaScript Optimization
 
 ### Code Splitting
 
-```typescript
-// Dynamic imports for code splitting
-const LazyComponent = dynamic(() => import('./LazyComponent'), {
+```jsx
+// Dynamic imports
+import dynamic from 'next/dynamic'
+
+const HeavyComponent = dynamic(() => import('./HeavyComponent'), {
   loading: () => <div>Loading...</div>,
 })
 
-// Route-based code splitting
+// Route-based splitting
 const AboutPage = dynamic(() => import('./pages/About'))
 ```
 
 ### Bundle Analysis
 
 ```bash
-# Analyze bundle size
-npm install --save-dev @next/bundle-analyzer
+# Install analyzer
+npm install @next/bundle-analyzer
 
-# Add to next.config.js
+# next.config.js
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 })
 
-module.exports = withBundleAnalyzer({
-  // your next config
-})
+module.exports = withBundleAnalyzer({})
 
 # Run analysis
 ANALYZE=true npm run build
 ```
 
-### JavaScript Best Practices
-
-- [ ] **Tree shake unused code** - Use ES6 imports
-- [ ] **Minimize JavaScript** - Use production builds
-- [ ] **Defer non-critical scripts** - Use async/defer attributes
-- [ ] **Optimize third-party scripts** - Load conditionally
-- [ ] **Use service workers** - For caching strategies
-
 ## Font Optimization
 
-### Google Fonts Optimization
+### Next.js Font Loading
 
-```html
-<!-- Preconnect to font origins -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-<!-- Load fonts with display swap -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-```
-
-### Self-Hosted Fonts
-
-```css
-@font-face {
-  font-family: 'Inter';
-  src: url('/fonts/inter-var.woff2') format('woff2');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
-```
-
-### Font Loading Strategy
-
-```typescript
-// Next.js font optimization
+```jsx
+// app/layout.tsx
 import { Inter } from 'next/font/google'
 
 const inter = Inter({
@@ -186,16 +135,26 @@ const inter = Inter({
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html className={inter.variable}>
       <body>{children}</body>
     </html>
   )
 }
 ```
 
-## Caching Strategies
+### Self-Hosted Fonts
 
-### HTTP Caching Headers
+```css
+@font-face {
+  font-family: 'CustomFont';
+  src: url('/fonts/font.woff2') format('woff2');
+  font-display: swap;
+}
+```
+
+## Caching
+
+### Static Assets
 
 ```javascript
 // next.config.js
@@ -204,159 +163,127 @@ module.exports = {
     return [
       {
         source: '/images/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
+        headers: [{
+          key: 'Cache-Control',
+          value: 'public, max-age=31536000, immutable',
+        }],
       },
       {
         source: '/fonts/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
+        headers: [{
+          key: 'Cache-Control',
+          value: 'public, max-age=31536000, immutable',
+        }],
       },
     ]
   },
 }
 ```
 
-### Service Worker Caching
-
-```javascript
-// public/sw.js
-self.addEventListener('fetch', (event) => {
-  if (event.request.destination === 'image') {
-    event.respondWith(
-      caches.open('images').then((cache) => {
-        return cache.match(event.request).then((response) => {
-          return response || fetch(event.request).then((fetchResponse) => {
-            cache.put(event.request, fetchResponse.clone())
-            return fetchResponse
-          })
-        })
-      })
-    )
-  }
-})
-```
-
 ## Performance Monitoring
 
-### Core Web Vitals Tracking
+### Web Vitals Tracking
 
-```typescript
-// utils/vitals.ts
-import { getCLS, getFID, getFCP, getLCP, getTTFB } from 'web-vitals'
-
-function sendToAnalytics(metric) {
-  // Send to your analytics service
-  gtag('event', metric.name, {
-    value: Math.round(metric.name === 'CLS' ? metric.value * 1000 : metric.value),
-    event_label: metric.id,
-    non_interaction: true,
-  })
+```jsx
+// app/layout.tsx
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        {children}
+        <WebVitals />
+      </body>
+    </html>
+  )
 }
 
-getCLS(sendToAnalytics)
-getFID(sendToAnalytics)
-getFCP(sendToAnalytics)
-getLCP(sendToAnalytics)
-getTTFB(sendToAnalytics)
-```
+// components/WebVitals.tsx
+'use client'
 
-### Performance Budget
+import { useReportWebVitals } from 'next/web-vitals'
 
-```javascript
-// next.config.js
-module.exports = {
-  experimental: {
-    bundlePagesRouterDependencies: true,
-  },
-  // Set performance budgets
-  webpack: (config, { dev, isServer }) => {
-    if (!dev && !isServer) {
-      config.optimization.splitChunks.cacheGroups.default.minSize = 20000
-      config.optimization.splitChunks.cacheGroups.default.maxSize = 244000
-    }
-    return config
-  },
+export function WebVitals() {
+  useReportWebVitals((metric) => {
+    // Send to analytics
+    console.log(metric)
+  })
+  
+  return null
 }
 ```
 
 ## Testing Tools
 
-### Essential Performance Tools
+### 1. Google PageSpeed Insights
+- Test URL: https://pagespeed.web.dev
+- Shows real-world data
+- Provides optimization suggestions
 
-1. **Google PageSpeed Insights**
-   - Tests real-world performance
-   - Provides Core Web Vitals data
-   - Offers optimization suggestions
-
-2. **Lighthouse**
-   - Comprehensive performance audit
-   - Available in Chrome DevTools
-   - CI/CD integration available
-
-3. **WebPageTest**
-   - Detailed waterfall analysis
-   - Multiple location testing
-   - Connection throttling
-
-4. **Chrome DevTools**
-   - Performance profiling
-   - Network analysis
-   - Coverage reports
-
-### Automated Testing
-
+### 2. Lighthouse (Chrome DevTools)
 ```bash
-# Install Lighthouse CI
-npm install -g @lhci/cli
-
-# Create lighthouserc.js
-module.exports = {
-  ci: {
-    collect: {
-      url: ['http://localhost:3000'],
-      startServerCommand: 'npm start',
-    },
-    assert: {
-      assertions: {
-        'categories:performance': ['warn', { minScore: 0.9 }],
-        'categories:accessibility': ['error', { minScore: 0.9 }],
-      },
-    },
-  },
-}
-
-# Run tests
-lhci autorun
+# Command line
+npm install -g lighthouse
+lighthouse https://yourdomain.com
 ```
+
+### 3. WebPageTest
+- Detailed waterfall analysis
+- Test from multiple locations
+
+### 4. Core Web Vitals Testing
+```javascript
+// Quick test in console
+new PerformanceObserver((list) => {
+  for (const entry of list.getEntries()) {
+    console.log(entry.name, entry.value)
+  }
+}).observe({ entryTypes: ['largest-contentful-paint', 'layout-shift', 'first-input'] })
+```
+
+## Quick Wins
+
+### 1. Preconnect to External Domains
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+```
+
+### 2. Resource Hints
+```html
+<!-- Preload critical resources -->
+<link rel="preload" href="/font.woff2" as="font" crossorigin>
+
+<!-- Prefetch next page -->
+<link rel="prefetch" href="/about">
+```
+
+### 3. Compression
+```javascript
+// next.config.js
+module.exports = {
+  compress: true,
+}
+```
+
+---
 
 ## Performance Checklist
 
-### Pre-Launch Performance Audit
+### Before Launch
+- [ ] PageSpeed score 90+ (mobile & desktop)
+- [ ] All images optimized (< 100KB)
+- [ ] Fonts using display: swap
+- [ ] JavaScript bundles analyzed
+- [ ] Critical CSS inlined
+- [ ] Caching headers set
+- [ ] Compression enabled
 
-- [ ] **PageSpeed Insights score** 90+ (mobile and desktop)
-- [ ] **Core Web Vitals** all green
-- [ ] **Images optimized** and properly sized
-- [ ] **Fonts loaded efficiently** with font-display: swap
-- [ ] **JavaScript bundles** analyzed and optimized
-- [ ] **CSS critical path** optimized
-- [ ] **Caching headers** configured
-- [ ] **CDN configured** for static assets
-- [ ] **Compression enabled** (gzip/brotli)
-- [ ] **HTTP/2 enabled** on server
+### Core Web Vitals
+- [ ] LCP ≤ 2.5 seconds
+- [ ] FID ≤ 100ms
+- [ ] CLS ≤ 0.1
 
-### Ongoing Monitoring
-
-- [ ] **Real User Monitoring** (RUM) implemented
-- [ ] **Performance budgets** set and monitored
-- [ ] **Regular audits** scheduled
-- [ ] **Performance regression** alerts configured
-- [ ] **Third-party script** impact monitored
+### Monitoring
+- [ ] Web Vitals tracking setup
+- [ ] Performance budgets set
+- [ ] Regular audits scheduled
