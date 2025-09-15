@@ -1,93 +1,162 @@
-# Robots.txt Configuration
+# Robots.txt Configuration for Next.js
 
-## Production robots.txt (Allow Indexing)
-
-```txt
-# /public/robots.txt - Main Domain
-User-agent: *
-Allow: /
-
-# Block admin and private areas
-Disallow: /admin/
-Disallow: /private/
-Disallow: /api/
-Disallow: /_next/
-Disallow: /dashboard/
-
-# Sitemap location
-Sitemap: https://www.yourdomain.com/sitemap.xml
-```
-
-## Blocked Domain robots.txt
-
-```txt
-# /public/robots.txt - Staging/Dev/Preview
-User-agent: *
-Disallow: /
-```
+Complete guide for creating and managing robots.txt files in Next.js applications using the app directory to control search engine crawling and indexing across different environments.
 
 ## What to Block vs Allow
 
-### ✅ Always Block
-- `/admin/` - Admin areas
-- `/api/` - API endpoints  
-- `/private/` - Private content
-- `/_next/` - Next.js build files
-- `/dashboard/` - User dashboards
-- `/temp/` - Temporary files
+| Path Type | Action | Example | Reason |
+|-----------|--------|---------|---------|
+| **Public Pages** | ✅ Allow | `/`, `/about`, `/products` | Main content for indexing |
+| **Admin Areas** | ❌ Block | `/admin/`, `/dashboard/` | Private administrative content |
+| **API Routes** | ❌ Block | `/api/` | Backend endpoints, not for indexing |
+| **Build Files** | ❌ Block | `/_next/` | Next.js internal files |
+| **Private Content** | ❌ Block | `/private/`, `/user/` | User-specific or sensitive content |
+| **Staging Domains** | ❌ Block All | `staging.domain.com` | Prevent duplicate content issues |
 
-### ✅ Always Allow
-- `/` - Homepage
-- `/sitemap.xml` - Sitemap
-- `/robots.txt` - This file
-- Public content pages
-- Images needed for rendering
+## Basic
 
-### ⚠️ Common Mistakes
+Essential setup and core functionality that everyone needs.
 
-❌ **Don't block CSS/JS if needed for rendering:**
-```txt
-# Bad - can hurt SEO
-Disallow: /css/
-Disallow: /js/
+### Static robots.txt File
+
+```typescript
+// app/robots.txt (Static file in app directory)
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_next/
+Sitemap: https://www.yourdomain.com/sitemap.xml
 ```
 
-❌ **Don't advertise sensitive paths:**
-```txt
-# Bad - tells hackers where to look
-Disallow: /secret-admin/
-Disallow: /confidential-data/
-```
-
-## Dynamic robots.txt (Next.js)
+### Dynamic robots.ts Generation
 
 ```typescript
 // app/robots.ts
 import { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = 'https://www.yourdomain.com'
-  
-  // Check environment
+  return {
+    rules: {
+      userAgent: '*',
+      allow: '/',
+      disallow: ['/admin/', '/api/', '/_next/', '/private/'],
+    },
+    sitemap: 'https://www.yourdomain.com/sitemap.xml',
+  }
+}
+```
+
+### Environment-Based Configuration
+
+```typescript
+// app/robots.ts
+import { MetadataRoute } from 'next'
+
+export default function robots(): MetadataRoute.Robots {
+  const baseUrl = process.env.NEXT_PUBLIC_DOMAIN || 'https://www.yourdomain.com'
   const isProduction = process.env.NODE_ENV === 'production'
-  const hostname = process.env.VERCEL_URL || ''
-  const isMainDomain = !hostname.includes('vercel.app') && 
-                       !hostname.includes('netlify.app')
   
-  if (isProduction && isMainDomain) {
-    // Production robots.txt
+  // Block everything in non-production environments
+  if (!isProduction) {
     return {
       rules: {
         userAgent: '*',
-        allow: '/',
-        disallow: ['/admin/', '/api/', '/private/', '/_next/'],
+        disallow: '/',
       },
-      sitemap: `${baseUrl}/sitemap.xml`,
     }
   }
-  
-  // Block everything for non-production
+
+  // Production robots.txt
   return {
+    rules: {
+      userAgent: '*',
+      allow: '/',
+      disallow: ['/admin/', '/api/', '/_next/', '/private/'],
+    },
+    sitemap: `${baseUrl}/sitemap.xml`,
+  }
+}
+```
+
+### Basic Checklist
+
+- [ ] Create `app/robots.ts` file in your Next.js project
+- [ ] Configure basic rules to allow public content and block private areas
+- [ ] Add sitemap reference to help search engines discover your content
+- [ ] Block non-production environments from indexing
+- [ ] Test robots.txt accessibility at `yourdomain.com/robots.txt`
+- [ ] Verify correct rules are applied in different environments
+
+## Advanced
+
+Optional features and advanced configurations.
+
+### Multiple User Agent Rules
+
+```typescript
+// app/robots.ts
+import { MetadataRoute } from 'next'
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: [
+      {
+        userAgent: 'Googlebot',
+        allow: ['/'],
+        disallow: '/private/',
+      },
+      {
+        userAgent: ['Applebot', 'Bingbot'],
+        allow: ['/'],
+        disallow: ['/admin/', '/api/'],
+      },
+      {
+        userAgent: '*',
+        disallow: '/',
+      },
+    ],
+    sitemap: 'https://www.yourdomain.com/sitemap.xml',
+  }
+}
+```
+
+### Domain-Specific Configuration
+
+```typescript
+// app/robots.ts
+import { MetadataRoute } from 'next'
+import { headers } from 'next/headers'
+
+export default function robots(): MetadataRoute.Robots {
+  const headersList = headers()
+  const domain = headersList.get('host') || 'localhost'
+  
+  // Configuration for different domains
+  const configs = {
+    'www.yourdomain.com': {
+      rules: {
+        userAgent: '*',
+        allow: '/',
+        disallow: ['/admin/', '/api/'],
+      },
+      sitemap: 'https://www.yourdomain.com/sitemap.xml',
+    },
+    'staging.yourdomain.com': {
+      rules: {
+        userAgent: '*',
+        disallow: '/',
+      },
+    },
+    'preview.yourdomain.com': {
+      rules: {
+        userAgent: '*',
+        disallow: '/',
+      },
+    },
+  }
+  
+  return configs[domain] || {
     rules: {
       userAgent: '*',
       disallow: '/',
@@ -96,112 +165,93 @@ export default function robots(): MetadataRoute.Robots {
 }
 ```
 
-## Testing Your robots.txt
-
-### 1. Manual Check
-```bash
-# Visit in browser
-https://yourdomain.com/robots.txt
-```
-
-### 2. Google Search Console
-- Go to **Settings** → **robots.txt Tester**
-- Enter your URL
-- Test specific paths
-
-### 3. Command Line
-```bash
-# Check if accessible
-curl https://yourdomain.com/robots.txt
-
-# Check specific user agent
-curl -A "Googlebot" https://yourdomain.com/robots.txt
-```
-
-### 4. Online Tools
-- Google's robots.txt Tester
-- Bing Webmaster Tools
-- Technical SEO validators
-
-## Multiple Environments Setup
-
-### Using Environment Variables
+### Crawl Delay Configuration
 
 ```typescript
-// app/robots.ts with environment detection
+// app/robots.ts
+import { MetadataRoute } from 'next'
+
 export default function robots(): MetadataRoute.Robots {
-  const domain = process.env.NEXT_PUBLIC_DOMAIN
-  
-  const configs = {
-    'www.yourdomain.com': {
-      rules: { userAgent: '*', allow: '/', disallow: ['/admin/'] },
-      sitemap: 'https://www.yourdomain.com/sitemap.xml',
-    },
-    'staging.yourdomain.com': {
-      rules: { userAgent: '*', disallow: '/' },
-    },
-    'dev.yourdomain.com': {
-      rules: { userAgent: '*', disallow: '/' },
-    },
-  }
-  
-  return configs[domain] || {
-    rules: { userAgent: '*', disallow: '/' },
+  return {
+    rules: [
+      {
+        userAgent: 'Googlebot',
+        allow: ['/'],
+        disallow: '/private/',
+        crawlDelay: 2,
+      },
+      {
+        userAgent: 'SemrushBot',
+        disallow: '/',
+      },
+      {
+        userAgent: '*',
+        allow: '/',
+        disallow: ['/admin/', '/api/'],
+        crawlDelay: 1,
+      },
+    ],
+    sitemap: 'https://www.yourdomain.com/sitemap.xml',
+    host: 'https://www.yourdomain.com',
   }
 }
 ```
 
-## Crawl Delay (Optional)
+### Emergency Blocking Configuration
 
-```txt
-# For sites with limited server resources
-User-agent: *
-Crawl-delay: 1
-Allow: /
+```typescript
+// app/robots.ts
+import { MetadataRoute } from 'next'
+
+export default function robots(): MetadataRoute.Robots {
+  // Emergency block list for leaked or unwanted domains
+  const emergencyBlockDomains = [
+    'old-domain.com',
+    'leaked-staging.com',
+    'preview-123.vercel.app'
+  ]
+  
+  const currentDomain = process.env.VERCEL_URL || process.env.NEXT_PUBLIC_DOMAIN || ''
+  const shouldEmergencyBlock = emergencyBlockDomains.some(domain => 
+    currentDomain.includes(domain)
+  )
+  
+  if (shouldEmergencyBlock) {
+    return {
+      rules: {
+        userAgent: '*',
+        disallow: '/',
+      },
+    }
+  }
+
+  // Regular production configuration
+  return {
+    rules: {
+      userAgent: '*',
+      allow: '/',
+      disallow: ['/admin/', '/api/', '/_next/'],
+    },
+    sitemap: 'https://www.yourdomain.com/sitemap.xml',
+  }
+}
 ```
 
-**Note:** Google ignores crawl-delay. Use Search Console crawl rate settings instead.
+### Advanced Checklist
 
-## Special Bots
+- [ ] Configure user agent specific rules for different search engines
+- [ ] Set up domain-specific robots.txt based on environment
+- [ ] Add crawl delay for resource-intensive sites
+- [ ] Implement emergency blocking for leaked domains
+- [ ] Test robots.txt with Google Search Console robots.txt tester
+- [ ] Monitor for unauthorized domains getting indexed
+- [ ] Set up alerts for robots.txt accessibility issues
 
-```txt
-# Block bad bots
-User-agent: AhrefsBot
-Disallow: /
+## References
 
-User-agent: SemrushBot
-Disallow: /
-
-# Allow good bots
-User-agent: Googlebot
-Allow: /
-
-User-agent: bingbot
-Allow: /
-```
-
----
-
-## Quick Reference
-
-### Production Template
-```txt
-User-agent: *
-Allow: /
-Disallow: /admin/
-Disallow: /api/
-Sitemap: https://www.yourdomain.com/sitemap.xml
-```
-
-### Blocked Template
-```txt
-User-agent: *
-Disallow: /
-```
-
-### Testing Checklist
-- [ ] File accessible at `/robots.txt`
-- [ ] Correct rules for environment
-- [ ] Sitemap referenced (production only)
-- [ ] No typos or syntax errors
-- [ ] Tested in Search Console
+- [Next.js robots.txt Official Documentation](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/robots)
+- [Next.js SEO Guide - robots.txt](https://nextjs.org/learn/seo/robots-txt)
+- [Robots Exclusion Standard](https://developers.google.com/search/docs/crawling-indexing/robots/intro)
+- [Google Search Console robots.txt Tester](https://support.google.com/webmasters/answer/6062598)
+- [Next.js Metadata API](https://nextjs.org/docs/app/api-reference/functions/generate-metadata)
+- [MetadataRoute.Robots Type Reference](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/robots#robots-object)
