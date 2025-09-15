@@ -1,0 +1,50 @@
+---
+
+Please provide me with a guide in this structure. Some modifications are allowed, such as including right or wrong examples or using tables if needed.
+
+Include only Next.js code examples that are relevant to the topic. To ensure accuracy and the most current practices, reference the official Next.js documentation.
+
+---
+
+# [Title Here]
+
+Brief description of what this guide covers.
+
+## Basic
+
+Essential setup and core functionality that everyone needs.
+
+### Subsection 1
+Code examples and explanations.
+
+### Subsection 2
+More essential content.
+
+### Basic Checklist
+- [ ] Item 1
+- [ ] Item 2
+- [ ] Item 3
+
+## Advanced
+
+Optional features and advanced configurations.
+
+### Advanced Feature 1
+Advanced code examples.
+
+### Advanced Feature 2
+More complex implementations.
+
+### Advanced Checklist
+- [ ] Advanced item 1
+- [ ] Advanced item 2
+- [ ] Advanced item 3
+
+## References
+
+- [Link Title 1](https://example.com)
+- [Link Title 2](https://example.com)
+- [Link Title 3](https://example.com)
+
+
+---

@@ -1,105 +1,73 @@
-# Analytics & Tracking
+# Analytics & Tracking for Next.js
 
-## Google Analytics 4 Setup
+Complete guide for integrating Google Analytics 4 and Search Console with Next.js applications using official Vercel documentation and best practices.
 
-### Basic Installation
+## Basic
 
-```typescript
-// lib/gtag.ts
-export const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_ID
+Essential setup and core functionality that everyone needs.
 
-export const pageview = (url: string) => {
-  if (typeof window !== 'undefined' && GA_TRACKING_ID) {
-    window.gtag('config', GA_TRACKING_ID, {
-      page_path: url,
-    })
-  }
-}
+### Create GA4 Property
 
-export const event = ({ action, category, label, value }) => {
-  if (typeof window !== 'undefined' && GA_TRACKING_ID) {
-    window.gtag('event', action, {
-      event_category: category,
-      event_label: label,
-      value: value,
-    })
-  }
-}
-```
+**Step 1: Set Up Google Analytics Account**
+1. Go to [analytics.google.com](https://analytics.google.com)
+2. Click **Start Measuring** (first time) or **Admin** → **Create** → **Account**
+3. Enter account name and configure data-sharing settings
+4. Click **Next**
+
+**Step 2: Create GA4 Property**
+1. Enter property name (e.g., "My Next.js Website")
+2. Select reporting time zone and currency
+3. Choose industry category and business size
+4. Click **Create**
+
+**Step 3: Add Web Data Stream**
+1. Select **Web** platform
+2. Enter website URL: `https://yourdomain.com`
+3. Enter stream name: "Web Stream"
+4. Enable **Enhanced Measurement** (recommended)
+5. Click **Create stream**
+
+**Step 4: Copy Measurement ID**
+- Find your **Measurement ID** (format: `G-XXXXXXXXXX`) in the stream details
+- Save this for Next.js integration
 
 ### Next.js Integration
 
-```tsx
-// app/layout.tsx
-import Script from 'next/script'
-import { getSEOConfig } from '@/utils/seo-config'
+```bash
+npm install @next/third-parties@latest
+```
 
-export default function RootLayout({ children }) {
-  const seoConfig = getSEOConfig()
-  
+```tsx
+// app/layout.tsx - App Router
+import { GoogleAnalytics } from '@next/third-parties/google'
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <html>
-      <body>
-        {children}
-        
-        {/* Only load on production main domain */}
-        {seoConfig.includeAnalytics && (
-          <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
-              strategy="afterInteractive"
-            />
-            <Script id="google-analytics" strategy="afterInteractive">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');
-              `}
-            </Script>
-          </>
-        )}
-      </body>
+    <html lang="en">
+      <body>{children}</body>
+      {/* Only load in production */}
+      {process.env.NODE_ENV === 'production' && (
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+      )}
     </html>
   )
 }
 ```
 
-### Page View Tracking
+### Environment Variables
 
-```typescript
-// app/providers.tsx
-'use client'
-
-import { useEffect } from 'react'
-import { usePathname, useSearchParams } from 'next/navigation'
-import * as gtag from '@/lib/gtag'
-
-export function Analytics() {
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
-
-  useEffect(() => {
-    if (pathname) {
-      gtag.pageview(pathname + searchParams.toString())
-    }
-  }, [pathname, searchParams])
-
-  return null
-}
+```bash
+# .env.local
+NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
 ```
 
-## Google Search Console
+### Google Search Console Setup
 
-### Verification Methods
-
-#### 1. HTML Meta Tag
-```html
-<meta name="google-site-verification" content="your-verification-code" />
-```
-
-#### 2. Next.js Implementation
-```typescript
+```tsx
 // app/layout.tsx
 export const metadata = {
   verification: {
@@ -108,137 +76,100 @@ export const metadata = {
 }
 ```
 
-#### 3. DNS Verification
+**Alternative DNS Verification:**
 ```txt
 # Add TXT record to DNS
 Name: @
 Value: google-site-verification=your-verification-code
 ```
 
-### Setup Checklist
-- [ ] Property verified
-- [ ] Sitemap submitted
-- [ ] Check Coverage report
-- [ ] Monitor Performance report
-- [ ] Review Core Web Vitals
+### Basic Checklist
 
-## Event Tracking
+- [ ] Create GA4 account and property at analytics.google.com
+- [ ] Add web data stream and copy Measurement ID
+- [ ] Enable Enhanced Measurement in GA4 dashboard
+- [ ] Install `@next/third-parties` package
+- [ ] Add `GoogleAnalytics` component to root layout
+- [ ] Configure `NEXT_PUBLIC_GA_ID` environment variable
+- [ ] Verify production-only loading works
+- [ ] Add Google Search Console verification to metadata
+- [ ] Submit sitemap to Search Console
 
-### Form Submissions
+## Advanced
+
+Optional features and advanced configurations.
+
+### Custom Event Tracking
 
 ```typescript
-// components/ContactForm.tsx
-import { event } from '@/lib/gtag'
+// lib/analytics.ts
+export const trackEvent = (
+  eventName: string,
+  parameters?: Record<string, any>
+) => {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', eventName, parameters)
+  }
+}
 
-const handleSubmit = (e) => {
-  e.preventDefault()
-  
-  // Track form submission
-  event({
-    action: 'submit',
-    category: 'Contact',
-    label: 'Contact Form',
+// GA4 event helpers
+export const trackFormSubmit = (formName: string) => {
+  trackEvent('form_submit', {
+    form_name: formName,
+    engagement_time_msec: Date.now()
   })
-  
-  // Handle form...
+}
+
+export const trackDownload = (fileName: string) => {
+  trackEvent('file_download', {
+    file_name: fileName,
+    file_extension: fileName.split('.').pop()
+  })
 }
 ```
 
-### Click Tracking
+**Usage Example:**
+```tsx
+// components/ContactForm.tsx
+import { trackFormSubmit } from '@/lib/analytics'
 
-```typescript
-// components/TrackableButton.tsx
-import { event } from '@/lib/gtag'
-
-const TrackableButton = ({ children, eventLabel }) => {
-  const handleClick = () => {
-    event({
-      action: 'click',
-      category: 'Button',
-      label: eventLabel,
-    })
+export default function ContactForm() {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    trackFormSubmit('contact_form')
+    // Handle form logic...
   }
 
-  return (
-    <button onClick={handleClick}>
-      {children}
-    </button>
-  )
+  return <form onSubmit={handleSubmit}>/* Form fields */</form>
 }
 ```
 
-### Scroll Tracking
+### Web Vitals Integration
 
-```typescript
-// hooks/useScrollTracking.ts
-import { useEffect } from 'react'
-import { event } from '@/lib/gtag'
+```tsx
+// app/layout.tsx
+import { useReportWebVitals } from 'next/web-vitals'
 
-export const useScrollTracking = () => {
-  useEffect(() => {
-    let scrolled = { 25: false, 50: false, 75: false, 100: false }
-    
-    const handleScroll = () => {
-      const scrollPercent = Math.round(
-        (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100
-      )
-      
-      Object.entries(scrolled).forEach(([threshold, tracked]) => {
-        if (scrollPercent >= Number(threshold) && !tracked) {
-          scrolled[threshold] = true
-          event({
-            action: 'scroll',
-            category: 'Engagement',
-            label: `${threshold}%`,
-          })
-        }
+export default function MyApp({ Component, pageProps }) {
+  useReportWebVitals((metric) => {
+    if (window.gtag) {
+      window.gtag('event', metric.name, {
+        value: Math.round(
+          metric.name === 'CLS' ? metric.value * 1000 : metric.value
+        ),
+        event_label: metric.id,
+        non_interaction: true,
       })
     }
-    
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  })
+
+  return <Component {...pageProps} />
 }
 ```
 
-## Conversion Tracking
+### Cookie Consent & GDPR
 
-### Goal Events
-
-```typescript
-// lib/conversions.ts
-import { event } from './gtag'
-
-export const trackFormSubmit = () => {
-  event({
-    action: 'generate_lead',
-    category: 'conversion',
-    label: 'form_submission',
-  })
-}
-
-export const trackSignup = () => {
-  event({
-    action: 'sign_up',
-    category: 'conversion',
-    label: 'newsletter',
-  })
-}
-
-export const trackDownload = (filename: string) => {
-  event({
-    action: 'file_download',
-    category: 'engagement',
-    label: filename,
-  })
-}
-```
-
-## Privacy & GDPR
-
-### Cookie Consent Banner
-
-```typescript
+```tsx
 // components/CookieConsent.tsx
 'use client'
 
@@ -246,33 +177,41 @@ import { useState, useEffect } from 'react'
 
 export default function CookieConsent() {
   const [showBanner, setShowBanner] = useState(false)
-  
+
   useEffect(() => {
     const consent = localStorage.getItem('cookie-consent')
-    if (!consent) {
-      setShowBanner(true)
-    }
+    if (!consent) setShowBanner(true)
   }, [])
-  
+
   const acceptCookies = () => {
     localStorage.setItem('cookie-consent', 'accepted')
+    
+    if (window.gtag) {
+      window.gtag('consent', 'update', {
+        analytics_storage: 'granted',
+        ad_storage: 'granted',
+        functionality_storage: 'granted',
+        personalization_storage: 'granted',
+        security_storage: 'granted'
+      })
+    }
+    
     setShowBanner(false)
-    // Load analytics scripts
-    window.location.reload()
   }
-  
-  const declineCookies = () => {
-    localStorage.setItem('cookie-consent', 'declined')
-    setShowBanner(false)
-  }
-  
+
   if (!showBanner) return null
-  
+
   return (
-    <div className="cookie-banner">
-      <p>We use cookies to improve your experience.</p>
-      <button onClick={acceptCookies}>Accept</button>
-      <button onClick={declineCookies}>Decline</button>
+    <div className="fixed bottom-0 left-0 right-0 bg-gray-900 text-white p-4 z-50">
+      <div className="max-w-4xl mx-auto flex items-center justify-between">
+        <p className="text-sm">We use cookies to improve your experience.</p>
+        <div className="flex gap-3">
+          <button onClick={() => { localStorage.setItem('cookie-consent', 'declined'); setShowBanner(false) }}>
+            Decline
+          </button>
+          <button onClick={acceptCookies}>Accept</button>
+        </div>
+      </div>
     </div>
   )
 }
@@ -280,81 +219,82 @@ export default function CookieConsent() {
 
 ### Conditional Analytics Loading
 
-```typescript
+```tsx
 // app/layout.tsx
+import { GoogleAnalytics } from '@next/third-parties/google'
+import { cookies } from 'next/headers'
+
 export default function RootLayout({ children }) {
-  const consent = cookies().get('cookie-consent')?.value
-  const shouldLoadAnalytics = consent === 'accepted' && getSEOConfig().includeAnalytics
-  
+  const cookieStore = cookies()
+  const consent = cookieStore.get('cookie-consent')?.value
+  const shouldLoadAnalytics = consent === 'accepted' && process.env.NODE_ENV === 'production'
+
   return (
     <html>
       <body>
         {children}
         <CookieConsent />
-        {shouldLoadAnalytics && <GoogleAnalytics />}
+        {shouldLoadAnalytics && (
+          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+        )}
       </body>
     </html>
   )
 }
 ```
 
-## Environment Variables
+### TypeScript Definitions
 
-```bash
-# .env.local
-NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
-NEXT_PUBLIC_DOMAIN=www.yourdomain.com
+```typescript
+// types/gtag.d.ts
+declare global {
+  interface Window {
+    gtag: (
+      command: 'config' | 'event' | 'consent',
+      targetId: string,
+      config?: any
+    ) => void
+  }
+}
+
+export {}
 ```
 
-## Testing Analytics
+### Development Testing
 
-### Debug Mode
+```typescript
+// lib/analytics.ts
+const isDev = process.env.NODE_ENV === 'development'
 
-```javascript
-// Enable debug mode in browser console
-window.gtag('config', 'G-XXXXXXXXXX', { debug_mode: true })
+export const trackEvent = (eventName: string, parameters?: Record<string, any>) => {
+  if (isDev) {
+    console.log('Analytics Event:', { eventName, parameters })
+    return
+  }
+  
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', eventName, parameters)
+  }
+}
 ```
 
-### Google Analytics Debugger
-1. Install Chrome extension
-2. Enable debugger
-3. Check console for events
+### Advanced Checklist
 
-### Verify Installation
-```javascript
-// Check if gtag is loaded
-console.log(typeof window.gtag)
+- [ ] Custom event tracking implemented for key interactions
+- [ ] Web Vitals integration configured
+- [ ] Cookie consent banner with Google Consent Mode
+- [ ] Conditional analytics loading based on consent
+- [ ] TypeScript definitions added
+- [ ] Development testing setup with console logging
+- [ ] GA4 DebugView testing completed
+- [ ] Privacy policy updated for GDPR compliance
+- [ ] Real-time reports monitoring configured
 
-// Check dataLayer
-console.log(window.dataLayer)
-```
+## References
 
----
-
-## Analytics Checklist
-
-### Setup
-- [ ] GA4 property created
-- [ ] Tracking code installed
-- [ ] Environment-specific loading
-- [ ] Page view tracking working
-- [ ] Search Console verified
-- [ ] Sitemap submitted
-
-### Events
-- [ ] Form submissions tracked
-- [ ] Key clicks tracked
-- [ ] Scroll depth tracked
-- [ ] Conversions configured
-
-### Privacy
-- [ ] Cookie consent banner
-- [ ] GDPR compliant
-- [ ] Analytics honors consent
-- [ ] Privacy policy updated
-
-### Testing
-- [ ] Test in GA4 DebugView
-- [ ] Verify no tracking on dev/staging
-- [ ] Check all events firing
-- [ ] Monitor real-time reports
+- [Next.js Analytics Documentation](https://nextjs.org/docs/pages/guides/analytics)
+- [Using Google Analytics with Next.js](https://nextjs.org/docs/messages/next-script-for-ga)
+- [Google Analytics 4 Setup Guide](https://support.google.com/analytics/answer/9304153)
+- [Google Search Console Verification](https://support.google.com/webmasters/answer/9008080)
+- [Next.js Third-Party Libraries](https://nextjs.org/docs/app/guides/third-party-libraries)
+- [Google Analytics Developer Documentation](https://developers.google.com/analytics/devguides/collection/ga4)
