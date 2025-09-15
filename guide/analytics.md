@@ -1,16 +1,13 @@
 # Analytics & Tracking
 
-Proper analytics setup is essential for measuring SEO performance and user behavior. This guide covers comprehensive tracking implementation.
+## Google Analytics 4 Setup
 
-## Google Analytics 4 (GA4)
-
-### Basic Setup
+### Basic Installation
 
 ```typescript
 // lib/gtag.ts
 export const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_ID
 
-// https://developers.google.com/analytics/devguides/collection/gtagjs/pages
 export const pageview = (url: string) => {
   if (typeof window !== 'undefined' && GA_TRACKING_ID) {
     window.gtag('config', GA_TRACKING_ID, {
@@ -19,13 +16,7 @@ export const pageview = (url: string) => {
   }
 }
 
-// https://developers.google.com/analytics/devguides/collection/gtagjs/events
-export const event = ({ action, category, label, value }: {
-  action: string
-  category: string
-  label?: string
-  value?: number
-}) => {
+export const event = ({ action, category, label, value }) => {
   if (typeof window !== 'undefined' && GA_TRACKING_ID) {
     window.gtag('event', action, {
       event_category: category,
@@ -38,82 +29,63 @@ export const event = ({ action, category, label, value }: {
 
 ### Next.js Integration
 
-```typescript
-// pages/_app.tsx
-import { useEffect } from 'react'
-import { useRouter } from 'next/router'
+```tsx
+// app/layout.tsx
 import Script from 'next/script'
-import * as gtag from '../lib/gtag'
+import { getSEOConfig } from '@/utils/seo-config'
 
-function MyApp({ Component, pageProps }) {
-  const router = useRouter()
-
-  useEffect(() => {
-    const handleRouteChange = (url: string) => {
-      gtag.pageview(url)
-    }
-    router.events.on('routeChangeComplete', handleRouteChange)
-    return () => {
-      router.events.off('routeChangeComplete', handleRouteChange)
-    }
-  }, [router.events])
-
+export default function RootLayout({ children }) {
+  const seoConfig = getSEOConfig()
+  
   return (
-    <>
-      {/* Global Site Tag (gtag.js) - Google Analytics */}
-      <Script
-        strategy="afterInteractive"
-        src={`https://www.googletagmanager.com/gtag/js?id=${gtag.GA_TRACKING_ID}`}
-      />
-      <Script
-        id="gtag-init"
-        strategy="afterInteractive"
-        dangerouslySetInnerHTML={{
-          __html: `
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${gtag.GA_TRACKING_ID}', {
-              page_path: window.location.pathname,
-            });
-          `,
-        }}
-      />
-      <Component {...pageProps} />
-    </>
+    <html>
+      <body>
+        {children}
+        
+        {/* Only load on production main domain */}
+        {seoConfig.includeAnalytics && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');
+              `}
+            </Script>
+          </>
+        )}
+      </body>
+    </html>
   )
 }
-
-export default MyApp
 ```
 
-### Environment-Specific Configuration
+### Page View Tracking
 
 ```typescript
-// lib/analytics.ts
-const isProduction = process.env.NODE_ENV === 'production'
-const isDevelopment = process.env.NODE_ENV === 'development'
-const isSubdomain = typeof window !== 'undefined' && 
-  window.location.hostname !== 'yourdomain.com'
+// app/providers.tsx
+'use client'
 
-export const shouldTrack = () => {
-  // Only track in production on main domain
-  return isProduction && !isSubdomain
-}
+import { useEffect } from 'react'
+import { usePathname, useSearchParams } from 'next/navigation'
+import * as gtag from '@/lib/gtag'
 
-export const initAnalytics = () => {
-  if (!shouldTrack()) {
-    console.log('Analytics disabled for this environment')
-    return
-  }
+export function Analytics() {
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
 
-  // Initialize GA4
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('config', process.env.NEXT_PUBLIC_GA_ID, {
-      send_page_view: true,
-      anonymize_ip: true,
-    })
-  }
+  useEffect(() => {
+    if (pathname) {
+      gtag.pageview(pathname + searchParams.toString())
+    }
+  }, [pathname, searchParams])
+
+  return null
 }
 ```
 
@@ -121,81 +93,76 @@ export const initAnalytics = () => {
 
 ### Verification Methods
 
-#### HTML Meta Tag Method
-
+#### 1. HTML Meta Tag
 ```html
-<!-- Add to <head> section -->
 <meta name="google-site-verification" content="your-verification-code" />
 ```
 
-#### Next.js Implementation
-
+#### 2. Next.js Implementation
 ```typescript
-// pages/_document.tsx
-import { Html, Head, Main, NextScript } from 'next/document'
-
-export default function Document() {
-  return (
-    <Html>
-      <Head>
-        <meta 
-          name="google-site-verification" 
-          content={process.env.NEXT_PUBLIC_GSC_VERIFICATION} 
-        />
-      </Head>
-      <body>
-        <Main />
-        <NextScript />
-      </body>
-    </Html>
-  )
+// app/layout.tsx
+export const metadata = {
+  verification: {
+    google: 'your-verification-code',
+  },
 }
 ```
 
-#### DNS Verification
-
-```bash
-# Add TXT record to your domain DNS
-# Name: @
-# Value: google-site-verification=your-verification-code
+#### 3. DNS Verification
+```txt
+# Add TXT record to DNS
+Name: @
+Value: google-site-verification=your-verification-code
 ```
 
-### Search Console Setup Checklist
-
-- [ ] **Property verified** for main domain
-- [ ] **Sitemap submitted** (XML sitemap URL)
-- [ ] **URL inspection** tested for key pages
-- [ ] **Coverage report** reviewed for errors
-- [ ] **Performance report** monitored for rankings
-- [ ] **Mobile usability** issues resolved
-- [ ] **Core Web Vitals** report reviewed
+### Setup Checklist
+- [ ] Property verified
+- [ ] Sitemap submitted
+- [ ] Check Coverage report
+- [ ] Monitor Performance report
+- [ ] Review Core Web Vitals
 
 ## Event Tracking
 
-### Custom Events
+### Form Submissions
 
 ```typescript
 // components/ContactForm.tsx
-import { event } from '../lib/gtag'
+import { event } from '@/lib/gtag'
 
-const ContactForm = () => {
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    
-    // Track form submission
+const handleSubmit = (e) => {
+  e.preventDefault()
+  
+  // Track form submission
+  event({
+    action: 'submit',
+    category: 'Contact',
+    label: 'Contact Form',
+  })
+  
+  // Handle form...
+}
+```
+
+### Click Tracking
+
+```typescript
+// components/TrackableButton.tsx
+import { event } from '@/lib/gtag'
+
+const TrackableButton = ({ children, eventLabel }) => {
+  const handleClick = () => {
     event({
-      action: 'submit',
-      category: 'Contact',
-      label: 'Contact Form',
+      action: 'click',
+      category: 'Button',
+      label: eventLabel,
     })
-    
-    // Handle form submission
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      {/* form fields */}
-    </form>
+    <button onClick={handleClick}>
+      {children}
+    </button>
   )
 }
 ```
@@ -205,26 +172,24 @@ const ContactForm = () => {
 ```typescript
 // hooks/useScrollTracking.ts
 import { useEffect } from 'react'
-import { event } from '../lib/gtag'
+import { event } from '@/lib/gtag'
 
 export const useScrollTracking = () => {
   useEffect(() => {
-    let scrollDepth = 0
-    const trackingPoints = [25, 50, 75, 100]
+    let scrolled = { 25: false, 50: false, 75: false, 100: false }
     
     const handleScroll = () => {
       const scrollPercent = Math.round(
         (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100
       )
       
-      trackingPoints.forEach(point => {
-        if (scrollPercent >= point && scrollDepth < point) {
-          scrollDepth = point
+      Object.entries(scrolled).forEach(([threshold, tracked]) => {
+        if (scrollPercent >= Number(threshold) && !tracked) {
+          scrolled[threshold] = true
           event({
             action: 'scroll',
             category: 'Engagement',
-            label: `${point}%`,
-            value: point,
+            label: `${threshold}%`,
           })
         }
       })
@@ -236,339 +201,160 @@ export const useScrollTracking = () => {
 }
 ```
 
-### Click Tracking
-
-```typescript
-// components/TrackableLink.tsx
-import Link from 'next/link'
-import { event } from '../lib/gtag'
-
-interface TrackableLinkProps {
-  href: string
-  children: React.ReactNode
-  category?: string
-  label?: string
-}
-
-const TrackableLink = ({ 
-  href, 
-  children, 
-  category = 'Link', 
-  label 
-}: TrackableLinkProps) => {
-  const handleClick = () => {
-    event({
-      action: 'click',
-      category,
-      label: label || href,
-    })
-  }
-
-  return (
-    <Link href={href} onClick={handleClick}>
-      {children}
-    </Link>
-  )
-}
-
-export default TrackableLink
-```
-
-## Performance Tracking
-
-### Core Web Vitals
-
-```typescript
-// lib/webVitals.ts
-import { getCLS, getFID, getFCP, getLCP, getTTFB } from 'web-vitals'
-import { event } from './gtag'
-
-function sendToGoogleAnalytics({ name, delta, value, id }) {
-  event({
-    action: name,
-    category: 'Web Vitals',
-    label: id,
-    value: Math.round(name === 'CLS' ? delta * 1000 : delta),
-  })
-}
-
-export function reportWebVitals() {
-  getCLS(sendToGoogleAnalytics)
-  getFID(sendToGoogleAnalytics)
-  getFCP(sendToGoogleAnalytics)
-  getLCP(sendToGoogleAnalytics)
-  getTTFB(sendToGoogleAnalytics)
-}
-```
-
-### Page Load Timing
-
-```typescript
-// lib/performanceTracking.ts
-export const trackPageLoad = () => {
-  if (typeof window !== 'undefined' && window.performance) {
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        const perfData = window.performance.timing
-        const pageLoadTime = perfData.loadEventEnd - perfData.navigationStart
-        const domReadyTime = perfData.domContentLoadedEventEnd - perfData.navigationStart
-        
-        event({
-          action: 'timing_complete',
-          category: 'Performance',
-          label: 'Page Load Time',
-          value: Math.round(pageLoadTime),
-        })
-        
-        event({
-          action: 'timing_complete',
-          category: 'Performance',
-          label: 'DOM Ready Time',
-          value: Math.round(domReadyTime),
-        })
-      }, 0)
-    })
-  }
-}
-```
-
-## Error Tracking
-
-### JavaScript Error Tracking
-
-```typescript
-// lib/errorTracking.ts
-export const initErrorTracking = () => {
-  if (typeof window !== 'undefined') {
-    window.addEventListener('error', (e) => {
-      event({
-        action: 'javascript_error',
-        category: 'Error',
-        label: `${e.filename}:${e.lineno}:${e.colno}`,
-      })
-    })
-    
-    window.addEventListener('unhandledrejection', (e) => {
-      event({
-        action: 'promise_rejection',
-        category: 'Error',
-        label: e.reason?.toString() || 'Unknown promise rejection',
-      })
-    })
-  }
-}
-```
-
-### 404 Error Tracking
-
-```typescript
-// pages/404.tsx
-import { useEffect } from 'react'
-import { useRouter } from 'next/router'
-import { event } from '../lib/gtag'
-
-export default function Custom404() {
-  const router = useRouter()
-  
-  useEffect(() => {
-    event({
-      action: '404',
-      category: 'Error',
-      label: router.asPath,
-    })
-  }, [router.asPath])
-  
-  return (
-    <div>
-      <h1>404 - Page Not Found</h1>
-      <p>The page you're looking for doesn't exist.</p>
-    </div>
-  )
-}
-```
-
 ## Conversion Tracking
 
-### Goal Setup
+### Goal Events
 
 ```typescript
 // lib/conversions.ts
-export const trackConversion = (conversionType: string, value?: number) => {
+import { event } from './gtag'
+
+export const trackFormSubmit = () => {
   event({
-    action: 'conversion',
-    category: 'Goal',
-    label: conversionType,
-    value,
+    action: 'generate_lead',
+    category: 'conversion',
+    label: 'form_submission',
   })
-  
-  // Send to Google Ads if applicable
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', 'conversion', {
-      send_to: 'AW-CONVERSION_ID/CONVERSION_LABEL',
-      value: value,
-      currency: 'USD',
-    })
-  }
 }
 
-// Usage examples
-export const trackFormSubmission = () => {
-  trackConversion('form_submission')
-}
-
-export const trackNewsletterSignup = () => {
-  trackConversion('newsletter_signup')
+export const trackSignup = () => {
+  event({
+    action: 'sign_up',
+    category: 'conversion',
+    label: 'newsletter',
+  })
 }
 
 export const trackDownload = (filename: string) => {
   event({
-    action: 'download',
-    category: 'Engagement',
+    action: 'file_download',
+    category: 'engagement',
     label: filename,
   })
 }
 ```
 
-## Privacy & GDPR Compliance
+## Privacy & GDPR
 
-### Cookie Consent
+### Cookie Consent Banner
 
 ```typescript
 // components/CookieConsent.tsx
-import { useState, useEffect } from 'react'
-import { initAnalytics } from '../lib/analytics'
+'use client'
 
-const CookieConsent = () => {
-  const [showConsent, setShowConsent] = useState(false)
+import { useState, useEffect } from 'react'
+
+export default function CookieConsent() {
+  const [showBanner, setShowBanner] = useState(false)
   
   useEffect(() => {
     const consent = localStorage.getItem('cookie-consent')
     if (!consent) {
-      setShowConsent(true)
-    } else if (consent === 'accepted') {
-      initAnalytics()
+      setShowBanner(true)
     }
   }, [])
   
   const acceptCookies = () => {
     localStorage.setItem('cookie-consent', 'accepted')
-    setShowConsent(false)
-    initAnalytics()
+    setShowBanner(false)
+    // Load analytics scripts
+    window.location.reload()
   }
   
   const declineCookies = () => {
     localStorage.setItem('cookie-consent', 'declined')
-    setShowConsent(false)
+    setShowBanner(false)
   }
   
-  if (!showConsent) return null
+  if (!showBanner) return null
   
   return (
-    <div className="cookie-consent">
-      <p>We use cookies to improve your experience and analyze site usage.</p>
+    <div className="cookie-banner">
+      <p>We use cookies to improve your experience.</p>
       <button onClick={acceptCookies}>Accept</button>
       <button onClick={declineCookies}>Decline</button>
     </div>
   )
 }
-
-export default CookieConsent
 ```
 
-### Data Anonymization
+### Conditional Analytics Loading
 
 ```typescript
-// lib/privacy.ts
-export const configurePrivacySettings = () => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    // Anonymize IP addresses
-    window.gtag('config', process.env.NEXT_PUBLIC_GA_ID, {
-      anonymize_ip: true,
-      allow_google_signals: false,
-      allow_ad_personalization_signals: false,
-    })
-  }
-}
-```
-
-## Monitoring & Alerts
-
-### Custom Dashboards
-
-```typescript
-// lib/monitoring.ts
-export const trackBusinessMetrics = () => {
-  // Track key business metrics
-  const metrics = {
-    page_views: 'pageview',
-    user_engagement: 'engagement',
-    conversion_rate: 'conversion',
-    bounce_rate: 'bounce',
-  }
+// app/layout.tsx
+export default function RootLayout({ children }) {
+  const consent = cookies().get('cookie-consent')?.value
+  const shouldLoadAnalytics = consent === 'accepted' && getSEOConfig().includeAnalytics
   
-  Object.entries(metrics).forEach(([metric, eventName]) => {
-    // Send custom metrics to analytics
-    event({
-      action: eventName,
-      category: 'Business Metrics',
-      label: metric,
-    })
-  })
+  return (
+    <html>
+      <body>
+        {children}
+        <CookieConsent />
+        {shouldLoadAnalytics && <GoogleAnalytics />}
+      </body>
+    </html>
+  )
 }
 ```
 
-### Alert Configuration
+## Environment Variables
+
+```bash
+# .env.local
+NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
+NEXT_PUBLIC_DOMAIN=www.yourdomain.com
+```
+
+## Testing Analytics
+
+### Debug Mode
 
 ```javascript
-// Google Analytics Intelligence API alerts
-const alertConfig = {
-  traffic_drop: {
-    metric: 'sessions',
-    threshold: -20, // 20% decrease
-    period: '7d',
-  },
-  conversion_drop: {
-    metric: 'goal_completions',
-    threshold: -15, // 15% decrease
-    period: '24h',
-  },
-  page_speed_degradation: {
-    metric: 'avg_page_load_time',
-    threshold: 3000, // 3 seconds
-    period: '1d',
-  },
-}
+// Enable debug mode in browser console
+window.gtag('config', 'G-XXXXXXXXXX', { debug_mode: true })
 ```
+
+### Google Analytics Debugger
+1. Install Chrome extension
+2. Enable debugger
+3. Check console for events
+
+### Verify Installation
+```javascript
+// Check if gtag is loaded
+console.log(typeof window.gtag)
+
+// Check dataLayer
+console.log(window.dataLayer)
+```
+
+---
 
 ## Analytics Checklist
 
-### Setup Requirements
+### Setup
+- [ ] GA4 property created
+- [ ] Tracking code installed
+- [ ] Environment-specific loading
+- [ ] Page view tracking working
+- [ ] Search Console verified
+- [ ] Sitemap submitted
 
-- [ ] **Google Analytics 4** configured and tracking
-- [ ] **Google Search Console** verified and monitoring
-- [ ] **Environment-specific tracking** (production only)
-- [ ] **Custom events** implemented for key actions
-- [ ] **Core Web Vitals** tracking enabled
-- [ ] **Error tracking** configured
-- [ ] **Conversion goals** defined and tracked
-- [ ] **Cookie consent** implemented (GDPR compliance)
-- [ ] **Data anonymization** enabled
-- [ ] **Custom dashboards** created for key metrics
+### Events
+- [ ] Form submissions tracked
+- [ ] Key clicks tracked
+- [ ] Scroll depth tracked
+- [ ] Conversions configured
 
-### Ongoing Monitoring
+### Privacy
+- [ ] Cookie consent banner
+- [ ] GDPR compliant
+- [ ] Analytics honors consent
+- [ ] Privacy policy updated
 
-- [ ] **Weekly performance** reports reviewed
-- [ ] **Search Console** errors monitored
-- [ ] **Conversion rates** tracked and optimized
-- [ ] **User behavior** analyzed for improvements
-- [ ] **Technical SEO** issues identified and resolved
-- [ ] **Content performance** measured and optimized
-- [ ] **Mobile vs desktop** performance compared
-- [ ] **Page speed** trends monitored
-
-### Reporting Schedule
-
-- **Daily**: Traffic, conversions, errors
-- **Weekly**: Detailed performance analysis
-- **Monthly**: Comprehensive SEO and business metrics review
-- **Quarterly**: Strategy review and optimization planning
+### Testing
+- [ ] Test in GA4 DebugView
+- [ ] Verify no tracking on dev/staging
+- [ ] Check all events firing
+- [ ] Monitor real-time reports
