@@ -1,16 +1,23 @@
-# Meta Tags & HTML Optimization
+Here's the simplified `meta-tags.md`:
 
-Essential meta tags and HTML elements for proper SEO implementation.
+```markdown
+# Meta Tags & HTML Optimization
 
 ## Essential Meta Tags
 
-### Basic HTML Meta Tags
+### Basic HTML Setup
 
 ```html
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="format-detection" content="telephone=no" />
-<meta name="google-site-verification" content="YOUR_VERIFICATION_CODE" />
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="format-detection" content="telephone=no" />
+  
+  <!-- Google Verification (if needed) -->
+  <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE" />
+</head>
 ```
 
 ### Robots Meta Tags
@@ -18,192 +25,105 @@ Essential meta tags and HTML elements for proper SEO implementation.
 #### Production Domain
 ```html
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-<meta name="googlebot" content="index, follow, max-video-preview:-1, max-image-preview:large, max-snippet:-1">
 ```
 
 #### Blocked Domains
 ```html
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
 <meta name="googlebot" content="noindex, nofollow">
-<meta name="bingbot" content="noindex, nofollow">
 ```
 
-## Title Tag Optimization
+## Title & Description
 
-### Best Practices
+### Title Tag (50-60 characters)
 
 ```html
-<!-- Title tag best practices -->
 <title>Primary Keyword | Secondary Keyword | Brand Name</title>
 ```
 
-**Rules:**
-- Keep under 60 characters
-- Include primary keyword near beginning
-- Make it compelling and clickable
-- Each page should have unique title
-- Use pipes (|) or hyphens (-) as separators
-
-### Examples
-
 ✅ **Good Examples:**
-```html
-<title>Web Design Services | Professional UI/UX | YourBrand</title>
-<title>SEO Checklist 2024 | Complete Guide | YourBrand</title>
-<title>Contact Us | Get Free Quote | YourBrand</title>
-```
+- `Web Design Services | Professional UI/UX | YourBrand`
+- `SEO Checklist 2024 | Complete Guide | YourBrand`
 
 ❌ **Bad Examples:**
-```html
-<title>Welcome to Our Website</title>
-<title>Home Page</title>
-<title>This is the best web design company in the world offering amazing services</title>
-```
+- `Welcome to Our Website`
+- `Home Page`
 
-## Meta Description
-
-### Best Practices
+### Meta Description (150-160 characters)
 
 ```html
-<meta name="description" content="Compelling description with primary keyword that describes value proposition and includes call-to-action. Keep under 160 characters for full display in search results.">
+<meta name="description" content="Clear value proposition with primary keyword. Include call-to-action. Keep under 160 characters for full display.">
 ```
 
-**Rules:**
-- 150-160 characters optimal
-- Include primary keyword naturally  
-- Write for humans, not just search engines
-- Include a call-to-action
-- Make it unique for each page
-- Avoid duplicate descriptions
-
-### Examples
-
-✅ **Good Examples:**
+✅ **Good Example:**
 ```html
-<meta name="description" content="Professional web design services that convert visitors into customers. Get a free quote today and boost your online presence with our expert team.">
-
-<meta name="description" content="Complete SEO checklist for 2024. Follow our step-by-step guide to improve your search rankings and drive more organic traffic to your site.">
+<meta name="description" content="Professional web design services that convert visitors into customers. Get a free quote today and boost your online presence.">
 ```
 
-❌ **Bad Examples:**
-```html
-<meta name="description" content="Welcome to our website">
-<meta name="description" content="We are the best company ever and we do everything you need and more with amazing results that will blow your mind and exceed all expectations">
-```
-
-## Header Structure (H1-H6)
+## Header Structure
 
 ### Proper Hierarchy
 
 ```html
-<!-- Proper header hierarchy -->
-<h1>Primary Keyword + Clear Value Proposition</h1>
+<h1>One H1 per page - Primary keyword focus</h1>
 
-<h2>Major Section: Benefits of Our Service</h2>
-  <h3>Specific Benefit 1</h3>
-  <h3>Specific Benefit 2</h3>
-  
-<h2>How It Works - Simple Process</h2>
-  <h3>Step 1: Getting Started</h3>
-  <h3>Step 2: Implementation</h3>
-  <h3>Step 3: Results</h3>
+<h2>Major Section Heading</h2>
+  <h3>Subsection under H2</h3>
+  <h3>Another subsection</h3>
 
-<h2>Customer Success Stories</h2>
-  <h3>Case Study 1</h3>
-  <h3>Case Study 2</h3>
+<h2>Another Major Section</h2>
+  <h3>Subsection</h3>
 ```
 
 **Rules:**
-- Only one H1 per page
-- Use H2-H6 in logical hierarchy
+- Only ONE H1 per page
+- Don't skip levels (H1 → H3)
 - Include keywords naturally
-- Make headers descriptive
-- Don't skip heading levels (H1 → H3)
 
-## Image Optimization
+## Images
 
-### Optimized Image Example
+### Optimized Image
 
 ```html
 <img 
-  src="/hero-image.webp" 
-  alt="Descriptive alt text that includes relevant keywords when appropriate"
+  src="/image.webp" 
+  alt="Descriptive text with keyword when relevant"
   width="800"
   height="600"
   loading="lazy"
-  decoding="async"
-  fetchpriority="high" // For above-the-fold images
+/>
+```
+
+### Next.js Image
+
+```jsx
+import Image from 'next/image'
+
+<Image
+  src="/hero.jpg"
+  alt="Descriptive alt text"
+  width={800}
+  height={600}
+  priority // For above-fold images
+  loading="lazy" // For below-fold images
 />
 ```
 
 **Rules:**
-- All images need descriptive alt text
-- Use modern formats (WebP, AVIF)
-- Specify width/height to prevent CLS
-- Use appropriate loading strategy
-- Compress images (aim for <100KB per image)
-- Use descriptive file names
+- Alt text on ALL images
+- Keep images under 100KB - 600KB(MAX)
+- Use WebP/AVIF formats. WebP is recommended. 
+- Specify width/height
 
-### Alt Text Best Practices
+## Canonical & Language
 
-✅ **Good Alt Text:**
-```html
-<img alt="Professional web designer working on laptop creating responsive website layout">
-<img alt="SEO performance dashboard showing 150% traffic increase">
-<img alt="Happy customer testimonial from John Smith, CEO of TechCorp">
-```
-
-❌ **Bad Alt Text:**
-```html
-<img alt="image1">
-<img alt="photo">
-<img alt="">
-<img alt="click here">
-```
-
-## Favicon & Icons
-
-### Essential Favicon Setup
+### Canonical URL
 
 ```html
-<!-- Essential favicon setup -->
-<link rel="icon" href="/favicon.ico" sizes="32x32" />
-<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-<link rel="manifest" href="/site.webmanifest" />
-<meta name="theme-color" content="#000000" />
-```
-
-### Required Files
-
-- `favicon.ico` (32x32px, for legacy browsers)
-- `favicon.svg` (scalable vector format)
-- `apple-touch-icon.png` (180x180px, for iOS)
-- `site.webmanifest` (PWA manifest)
-
-## Canonical URLs
-
-### Prevent Duplicate Content
-
-```html
-<!-- Prevent duplicate content issues -->
 <link rel="canonical" href="https://www.yourdomain.com/current-page/" />
-
-<!-- For paginated content -->
-<link rel="canonical" href="https://www.yourdomain.com/articles/" />
-<link rel="next" href="https://www.yourdomain.com/articles/page-2/" />
 ```
 
-**Rules:**
-- Always use absolute URLs
-- Point to the preferred version of the page
-- Use for pagination, sorting, filtering
-- Ensure canonical URL is accessible
-- Don't canonical to different content
-
-## Language and Locale
-
-### HTML Lang Attribute
+### Language
 
 ```html
 <html lang="en">
@@ -211,11 +131,90 @@ Essential meta tags and HTML elements for proper SEO implementation.
 <html lang="en-US">
 ```
 
-### Hreflang for International Sites
+### International (if needed)
 
 ```html
 <link rel="alternate" hreflang="en" href="https://example.com/" />
 <link rel="alternate" hreflang="es" href="https://example.com/es/" />
-<link rel="alternate" hreflang="fr" href="https://example.com/fr/" />
 <link rel="alternate" hreflang="x-default" href="https://example.com/" />
+```
+
+## Favicon & Icons
+
+```html
+<link rel="icon" href="/favicon.ico" sizes="32x32" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="manifest" href="/site.webmanifest" />
+<meta name="theme-color" content="#000000" />
+```
+
+**Required Files:**
+- `favicon.ico` (32x32px)
+- `favicon.svg` (scalable)
+- `apple-touch-icon.png` (180x180px)
+- `site.webmanifest`
+
+## Open Graph & Social
+
+### Open Graph (Facebook)
+
+```html
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Page Title - Keep Under 60 Characters" />
+<meta property="og:description" content="Description - Keep under 160 characters" />
+<meta property="og:image" content="https://yourdomain.com/og-image.jpg" />
+<meta property="og:url" content="https://yourdomain.com" />
+<meta property="og:site_name" content="Your Site Name" />
+```
+
+### Twitter Card
+
+```html
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Title - Keep Under 70 Characters" />
+<meta name="twitter:description" content="Description - Keep under 200 characters" />
+<meta name="twitter:image" content="https://yourdomain.com/twitter-image.jpg" />
+<meta name="twitter:site" content="@yourhandle" />
+```
+
+**Image Requirements:**
+- OG Image: 1200x630px
+- Twitter Image: 1200x600px
+
+---
+
+## Complete Example
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <!-- SEO Meta Tags -->
+  <title>Web Design Services | Professional UI/UX | YourBrand</title>
+  <meta name="description" content="Professional web design services that convert visitors into customers. Get a free quote today and boost your online presence.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://www.yourdomain.com/" />
+  
+  <!-- Favicon -->
+  <link rel="icon" href="/favicon.ico" sizes="32x32" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Professional Web Design Services | YourBrand" />
+  <meta property="og:description" content="Transform your online presence with our expert web design services. Get a free quote today." />
+  <meta property="og:image" content="https://yourdomain.com/og-image.jpg" />
+  <meta property="og:url" content="https://yourdomain.com" />
+  
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Professional Web Design Services" />
+  <meta name="twitter:description" content="Transform your online presence with our expert web design services." />
+  <meta name="twitter:image" content="https://yourdomain.com/twitter-image.jpg" />
+</head>
+```
 ```
