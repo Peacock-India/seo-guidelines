@@ -1,6 +1,3 @@
-Here's the simplified `checklist.md` file:
-
-```markdown
 # SEO Landing Page Checklist
 
 ## ✅ Must-Have SEO Checklist
@@ -99,4 +96,3 @@ Here's the simplified `checklist.md` file:
 - [ ] 404 page customized
 - [ ] Mobile testing passed
 - [ ] Schema markup validated
-```
