@@ -70,9 +70,9 @@ Here's the simplified `checklist.md` file:
 ## 🚨 Emergency Fixes
 
 ### Wrong Domain Gets Indexed
-*See: [Domain Indexing Emergency](./guide/next/domain-indexing.md#emergency-response)*
+*See: [Domain Indexing Emergency](./next/guide/domain-indexing.md#emergency-response)*
 
-**Do immediately (within 1 hour):**
+**Do immediately (within 24 hour):**
 
 1. [ ] Add noindex meta tag to unwanted domain
 2. [ ] Update robots.txt to block all
