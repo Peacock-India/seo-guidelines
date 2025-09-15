@@ -4,6 +4,8 @@ Please provide me with a guide in this structure. Some modifications are allowed
 
 Include only Next.js code examples that are relevant to the topic. To ensure accuracy and the most current practices, reference the official Next.js documentation.
 
+NOTE: If 'All' is required, then mention 'Nil' in the advance section.
+
 ---
 
 # [Title Here]
