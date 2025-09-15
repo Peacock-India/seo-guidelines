@@ -76,27 +76,32 @@ export const metadata: Metadata = {
 
 ### Headers Configuration
 
-#### Next.js Config
+### Method 1: next.config.js
+
 ```javascript
 // next.config.js
 module.exports = {
   async headers() {
+    const headers = []
+    
     // Block preview deployments
-    if (process.env.VERCEL_ENV === 'preview') {
-      return [{
+    if (process.env.VERCEL_ENV === 'preview' || 
+        process.env.NODE_ENV !== 'production') {
+      headers.push({
         source: '/(.*)',
         headers: [{
           key: 'X-Robots-Tag',
-          value: 'noindex, nofollow',
+          value: 'noindex, nofollow, noarchive',
         }],
-      }];
+      })
     }
-    return [];
+    
+    return headers
   },
-};
+}
 ```
 
-#### Vercel Config
+### Method 2: Vercel Config
 ```json
 // vercel.json
 {
@@ -113,6 +118,28 @@ module.exports = {
       }]
     }
   ]
+}
+```
+
+### Method 3: Middleware
+
+```typescript
+// middleware.ts
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+
+export function middleware(request: NextRequest) {
+  const response = NextResponse.next()
+  const hostname = request.headers.get('host') || ''
+  
+  // Block non-production domains
+  if (hostname.includes('vercel.app') || 
+      hostname.includes('netlify.app') ||
+      hostname.includes('staging.')) {
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow')
+  }
+  
+  return response
 }
 ```
 
