@@ -1,8 +1,10 @@
-# Analytics & Tracking
+# Analytics & Tracking for Next.js
 
-## Google Analytics 4 Setup
+Complete guide for setting up Google Analytics 4 and Search Console integration with Next.js applications.
 
-### Basic Installation
+## Basic Setup (Required)
+
+### Google Analytics 4 Installation
 
 ```typescript
 // lib/gtag.ts
@@ -32,18 +34,14 @@ export const event = ({ action, category, label, value }) => {
 ```tsx
 // app/layout.tsx
 import Script from 'next/script'
-import { getSEOConfig } from '@/utils/seo-config'
 
 export default function RootLayout({ children }) {
-  const seoConfig = getSEOConfig()
-  
   return (
     <html>
       <body>
         {children}
         
-        {/* Only load on production main domain */}
-        {seoConfig.includeAnalytics && (
+        {process.env.NODE_ENV === 'production' && (
           <>
             <Script
               src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
@@ -89,16 +87,9 @@ export function Analytics() {
 }
 ```
 
-## Google Search Console
+### Google Search Console Setup
 
-### Verification Methods
-
-#### 1. HTML Meta Tag
-```html
-<meta name="google-site-verification" content="your-verification-code" />
-```
-
-#### 2. Next.js Implementation
+#### HTML Meta Tag Verification
 ```typescript
 // app/layout.tsx
 export const metadata = {
@@ -108,24 +99,34 @@ export const metadata = {
 }
 ```
 
-#### 3. DNS Verification
+#### DNS Verification Alternative
 ```txt
 # Add TXT record to DNS
 Name: @
 Value: google-site-verification=your-verification-code
 ```
 
-### Setup Checklist
-- [ ] Property verified
+### Environment Variables
+
+```bash
+# .env.local
+NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
+```
+
+### Basic Setup Checklist
+- [ ] GA4 property created
+- [ ] Tracking code installed
+- [ ] Page view tracking working
+- [ ] Search Console verified
 - [ ] Sitemap submitted
 - [ ] Check Coverage report
 - [ ] Monitor Performance report
-- [ ] Review Core Web Vitals
 
-## Event Tracking
+## Advanced Features (Optional)
 
-### Form Submissions
+### Custom Event Tracking
 
+#### Form Submissions
 ```typescript
 // components/ContactForm.tsx
 import { event } from '@/lib/gtag'
@@ -133,7 +134,6 @@ import { event } from '@/lib/gtag'
 const handleSubmit = (e) => {
   e.preventDefault()
   
-  // Track form submission
   event({
     action: 'submit',
     category: 'Contact',
@@ -144,8 +144,7 @@ const handleSubmit = (e) => {
 }
 ```
 
-### Click Tracking
-
+#### Click Tracking
 ```typescript
 // components/TrackableButton.tsx
 import { event } from '@/lib/gtag'
@@ -167,7 +166,7 @@ const TrackableButton = ({ children, eventLabel }) => {
 }
 ```
 
-### Scroll Tracking
+### Scroll Depth Tracking
 
 ```typescript
 // hooks/useScrollTracking.ts
@@ -201,9 +200,7 @@ export const useScrollTracking = () => {
 }
 ```
 
-## Conversion Tracking
-
-### Goal Events
+### Conversion Tracking
 
 ```typescript
 // lib/conversions.ts
@@ -234,10 +231,9 @@ export const trackDownload = (filename: string) => {
 }
 ```
 
-## Privacy & GDPR
+### Cookie Consent & GDPR
 
-### Cookie Consent Banner
-
+#### Cookie Consent Banner
 ```typescript
 // components/CookieConsent.tsx
 'use client'
@@ -257,7 +253,6 @@ export default function CookieConsent() {
   const acceptCookies = () => {
     localStorage.setItem('cookie-consent', 'accepted')
     setShowBanner(false)
-    // Load analytics scripts
     window.location.reload()
   }
   
@@ -278,13 +273,14 @@ export default function CookieConsent() {
 }
 ```
 
-### Conditional Analytics Loading
-
+#### Conditional Analytics Loading
 ```typescript
 // app/layout.tsx
+import { cookies } from 'next/headers'
+
 export default function RootLayout({ children }) {
   const consent = cookies().get('cookie-consent')?.value
-  const shouldLoadAnalytics = consent === 'accepted' && getSEOConfig().includeAnalytics
+  const shouldLoadAnalytics = consent === 'accepted'
   
   return (
     <html>
@@ -298,29 +294,15 @@ export default function RootLayout({ children }) {
 }
 ```
 
-## Environment Variables
+### Testing & Debugging
 
-```bash
-# .env.local
-NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
-NEXT_PUBLIC_DOMAIN=www.yourdomain.com
-```
-
-## Testing Analytics
-
-### Debug Mode
-
+#### Debug Mode
 ```javascript
 // Enable debug mode in browser console
 window.gtag('config', 'G-XXXXXXXXXX', { debug_mode: true })
 ```
 
-### Google Analytics Debugger
-1. Install Chrome extension
-2. Enable debugger
-3. Check console for events
-
-### Verify Installation
+#### Verify Installation
 ```javascript
 // Check if gtag is loaded
 console.log(typeof window.gtag)
@@ -329,32 +311,53 @@ console.log(typeof window.gtag)
 console.log(window.dataLayer)
 ```
 
----
-
-## Analytics Checklist
-
-### Setup
-- [ ] GA4 property created
-- [ ] Tracking code installed
-- [ ] Environment-specific loading
-- [ ] Page view tracking working
-- [ ] Search Console verified
-- [ ] Sitemap submitted
-
-### Events
-- [ ] Form submissions tracked
-- [ ] Key clicks tracked
-- [ ] Scroll depth tracked
-- [ ] Conversions configured
-
-### Privacy
-- [ ] Cookie consent banner
-- [ ] GDPR compliant
-- [ ] Analytics honors consent
+### Advanced Setup Checklist
+- [ ] Custom events configured
+- [ ] Conversion tracking setup
+- [ ] Cookie consent implemented
+- [ ] GDPR compliance verified
+- [ ] Analytics tested in DebugView
 - [ ] Privacy policy updated
+- [ ] Real-time reports monitored
 
-### Testing
+## Complete Testing Checklist
+
+### Setup Verification
+- [ ] GA4 property created and configured
+- [ ] Tracking code installed correctly
+- [ ] Environment-specific loading works
+- [ ] Page view tracking functional
+- [ ] Search Console verified
+- [ ] Sitemap submitted and indexed
+
+### Events & Conversions
+- [ ] Form submissions tracked
+- [ ] Key button clicks tracked
+- [ ] Scroll depth tracking active
+- [ ] Conversion goals configured
+- [ ] Custom events firing correctly
+
+### Privacy & Compliance
+- [ ] Cookie consent banner implemented
+- [ ] GDPR compliance verified
+- [ ] Analytics respects user consent
+- [ ] Privacy policy updated
+- [ ] Data retention configured
+
+### Performance & Monitoring
 - [ ] Test in GA4 DebugView
 - [ ] Verify no tracking on dev/staging
-- [ ] Check all events firing
-- [ ] Monitor real-time reports
+- [ ] Check all events in real-time
+- [ ] Monitor Core Web Vitals
+- [ ] Set up custom alerts
+
+## References
+
+- [Setup Google Analytics 4 and Next.js 14](https://www.nuctro.com/blog/setup-google-analytics-4-and-nextjs-14)
+- [Google Analytics 4 Documentation](https://developers.google.com/analytics/devguides/collection/ga4)
+- [Next.js Analytics Documentation](https://nextjs.org/docs/app/building-your-application/optimizing/analytics)
+- [Google Search Console Help](https://support.google.com/webmasters)
+- [GA4 Event Reference](https://developers.google.com/analytics/devguides/collection/ga4/reference/events)
+- [Next.js Script Component](https://nextjs.org/docs/app/api-reference/components/script)
+- [Google Tag Manager](https://developers.google.com/tag-platform/gtagjs)
+- [GDPR Compliance Guide](https://gdpr.eu/cookies/)
