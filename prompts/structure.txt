@@ -12,6 +12,8 @@ NOTE: If 'All' is required, then mention 'Nil' in the advance section.
 
 Brief description of what this guide covers.
 
+## Table example/explanations
+
 ## Basic
 
 Essential setup and core functionality that everyone needs.
